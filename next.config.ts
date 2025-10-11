@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'standalone',
+  // opzionale: altre impostazioni
 };
 
 export default nextConfig;
