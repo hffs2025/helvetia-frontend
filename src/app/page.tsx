@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 /* ====================== Logo (PNG, fill header height) ====================== */
 function Logo() {
@@ -50,13 +51,12 @@ function Header() {
 
         {/* Buttons (compatti) */}
         <div className="hidden sm:flex items-center gap-2 leading-none">
-          <a href="#cta" className="px-3 py-1.5 rounded-xl border border-white/20 hover:bg-white/10 text-sm">Login</a>
-          <a href="#cta" className="px-3 py-1.5 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">
-            Open Individual Account
-          </a>
-          <a href="#cta" className="px-3 py-1.5 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">
-            Open Business Account
-          </a>
+          <Link
+            href="/login"
+            className="px-3 py-1.5 rounded-xl border border-white/20 hover:bg-white/10 text-sm"
+          >
+            Login
+          </Link>
         </div>
       </div>
     </header>
@@ -141,12 +141,12 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
           <p className="mt-2 text-white/80 text-lg max-w-xl">Debit Cards</p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+            <Link href="/signup/individual" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
               Open Individual Account
-            </a>
-            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+            </Link>
+            <Link href="/signup/business" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
               Open Business Account
-            </a>
+            </Link>
           </div>
 
           <div className="mt-6 text-xs text-white/70 flex items-center gap-2">
@@ -159,15 +159,7 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
             <IconLock className="w-4 h-4 text-emerald-300" /> Secure custody
           </div>
         </div>
-
-        
-    
- 
-</div>
-
-
-
-      
+      </div>
     </section>
   );
 }
@@ -360,6 +352,7 @@ function Footer() {
         <div>
           <div className="font-medium text-white">Company</div>
           <ul className="mt-2 space-y-1 text-gray-300">
+             <li><a className="hover:text-white" href="#compliance">Authorization</a></li>
             <li><a className="hover:text-white" href="#compliance">Security</a></li>
             <li><a className="hover:text-white" href="#features">Documentation</a></li>
             <li><a className="hover:text-white" href="#">Careers</a></li>
