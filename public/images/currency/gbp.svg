@@ -1,0 +1,53 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradiente blu morbido -->
+    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8097E5" />
+      <stop offset="100%" stop-color="#273A80" />
+    </linearGradient>
+
+    <!-- Gradiente rosso pastello -->
+    <linearGradient id="red-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB3BB" />
+      <stop offset="100%" stop-color="#C64B58" />
+    </linearGradient>
+
+    <!-- Effetto sfocatura leggerissima -->
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="0.8" />
+    </filter>
+
+    <!-- Clip per mantenere la bandiera dentro al cerchio -->
+    <clipPath id="clip-circle">
+      <circle cx="128" cy="128" r="120" />
+    </clipPath>
+  </defs>
+
+  <!-- Cerchio di base -->
+  <circle cx="128" cy="128" r="120" fill="url(#blue-grad)" />
+
+  <!-- Union Jack sfumata -->
+  <g clip-path="url(#clip-circle)" opacity="0.55" filter="url(#blur)">
+    <!-- Croci bianche -->
+    <rect x="104" width="48" height="256" fill="#FFFFFF" />
+    <rect y="104" width="256" height="48" fill="#FFFFFF" />
+
+    <!-- Croci rosse -->
+    <rect x="116" width="24" height="256" fill="url(#red-grad)" />
+    <rect y="116" width="256" height="24" fill="url(#red-grad)" />
+
+    <!-- Diagonali bianche -->
+    <path d="M0,0 L256,256 M256,0 L0,256" stroke="#FFFFFF" stroke-width="48" />
+    <!-- Diagonali rosse -->
+    <path d="M0,0 L256,256 M256,0 L0,256" stroke="url(#red-grad)" stroke-width="24" />
+  </g>
+
+  <!-- Simbolo £ bianco centrato -->
+  <text x="128" y="128"
+        dx="2" dy="4"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="140"
+        fill="#FFFFFF">£</text>
+</svg>

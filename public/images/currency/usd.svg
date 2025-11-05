@@ -1,0 +1,106 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradiente azzurro di base del cerchio -->
+    <linearGradient id="us-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#89B4F8" />
+      <stop offset="100%" stop-color="#2B5EA8" />
+    </linearGradient>
+
+    <!-- Rosso morbido per le strisce -->
+    <linearGradient id="us-red-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9AA3" />
+      <stop offset="100%" stop-color="#C9414F" />
+    </linearGradient>
+
+    <!-- Blu morbido per il canton (stellato) -->
+    <linearGradient id="us-canton-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6FA0E8" />
+      <stop offset="100%" stop-color="#264C8A" />
+    </linearGradient>
+
+    <!-- Sfocatura lieve (coerente con versione UK) -->
+    <filter id="soft-blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="0.8" />
+    </filter>
+
+    <!-- Clip al cerchio -->
+    <clipPath id="clip-circle">
+      <circle cx="128" cy="128" r="120" />
+    </clipPath>
+  </defs>
+
+  <!-- Cerchio base -->
+  <circle cx="128" cy="128" r="120" fill="url(#us-blue-grad)" />
+
+  <!-- Bandiera USA stilizzata, soft e leggermente sfumata -->
+  <g clip-path="url(#clip-circle)" opacity="0.55" filter="url(#soft-blur)">
+    <!-- Base bianca -->
+    <rect x="0" y="0" width="256" height="256" fill="#FFFFFF" />
+
+    <!-- 13 strisce rosse (partendo dall'alto) -->
+    <!-- Altezza approssimata di una striscia: 256/13 ≈ 19.692 -->
+    <rect x="0" y="0"    width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="39.384"  width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="78.768"  width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="118.152" width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="157.536" width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="196.920" width="256" height="19.692" fill="url(#us-red-grad)" />
+    <rect x="0" y="236.304" width="256" height="19.692" fill="url(#us-red-grad)" />
+
+    <!-- Canton blu: altezza = 7 strisce, larghezza ≈ 0.76 della larghezza -->
+    <!-- 7*19.692 ≈ 137.844 ; 0.76*256 ≈ 194.56 -->
+    <rect x="0" y="0" width="194.56" height="137.844" fill="url(#us-canton-blue)" />
+
+    <!-- Stelle semplificate (punti) per effetto soft; 6x5 griglia alternata -->
+    <g fill="#FFFFFF" opacity="0.8">
+      <!-- Riga 1 (6) -->
+      <circle cx="16" cy="12" r="2.6" />
+      <circle cx="48" cy="12" r="2.6" />
+      <circle cx="80" cy="12" r="2.6" />
+      <circle cx="112" cy="12" r="2.6" />
+      <circle cx="144" cy="12" r="2.6" />
+      <circle cx="176" cy="12" r="2.6" />
+      <!-- Riga 2 (5) -->
+      <circle cx="32" cy="32" r="2.6" />
+      <circle cx="64" cy="32" r="2.6" />
+      <circle cx="96" cy="32" r="2.6" />
+      <circle cx="128" cy="32" r="2.6" />
+      <circle cx="160" cy="32" r="2.6" />
+      <!-- Riga 3 (6) -->
+      <circle cx="16" cy="52" r="2.6" />
+      <circle cx="48" cy="52" r="2.6" />
+      <circle cx="80" cy="52" r="2.6" />
+      <circle cx="112" cy="52" r="2.6" />
+      <circle cx="144" cy="52" r="2.6" />
+      <circle cx="176" cy="52" r="2.6" />
+      <!-- Riga 4 (5) -->
+      <circle cx="32" cy="72" r="2.6" />
+      <circle cx="64" cy="72" r="2.6" />
+      <circle cx="96" cy="72" r="2.6" />
+      <circle cx="128" cy="72" r="2.6" />
+      <circle cx="160" cy="72" r="2.6" />
+      <!-- Riga 5 (6) -->
+      <circle cx="16" cy="92" r="2.6" />
+      <circle cx="48" cy="92" r="2.6" />
+      <circle cx="80" cy="92" r="2.6" />
+      <circle cx="112" cy="92" r="2.6" />
+      <circle cx="144" cy="92" r="2.6" />
+      <circle cx="176" cy="92" r="2.6" />
+      <!-- Riga 6 (5) -->
+      <circle cx="32" cy="112" r="2.6" />
+      <circle cx="64" cy="112" r="2.6" />
+      <circle cx="96" cy="112" r="2.6" />
+      <circle cx="128" cy="112" r="2.6" />
+      <circle cx="160" cy="112" r="2.6" />
+    </g>
+  </g>
+
+  <!-- Simbolo $ bianco centrato (correzione ottica lieve) -->
+  <text x="128" y="128"
+        dx="2" dy="4"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="140"
+        fill="#FFFFFF">$</text>
+</svg>

@@ -1,291 +1,69 @@
 ﻿'use client';
 
-// Next.js home page for Helvetia Financial Services
-// Alternanza full-width: NAVY (#0B132B) / DARK BLUE (#122B47)
-// Tailwind v4 (globals.css: `@import "tailwindcss";`)
 import React, { useState } from 'react';
+import Image from 'next/image';
 
-export default function HomePage() {
-  const [email, setEmail] = useState('');
+/* ====================== Logo (PNG, fill header height) ====================== */
+function Logo() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <Header />
-      <Hero email={email} setEmail={setEmail} />
-      <TrustBar />
-      <Services />
-      <Features />
-      <Compliance />
-      <CTA email={email} setEmail={setEmail} />
-      <Footer />
+    <div className="flex items-center h-full" aria-label="Helvetia Financial Services logo">
+      <Image
+        src="/images/Logo.png"
+        alt="Helvetia Financial Services"
+        width={1200}           // valori intrinseci alti (per qualità)
+        height={450}
+        priority
+        className="select-none pointer-events-none"
+        sizes="(max-width: 768px) 240px, (max-width: 1024px) 300px, 380px"
+        style={{
+          height: '170%',      // il logo non supera l’altezza della barra
+          width: 'auto',
+          display: 'block',
+        }}
+      />
     </div>
   );
 }
 
-/* ---------------- Header (NAVY) ---------------- */
+/* ====================== Header (altezza fissa + responsive) ====================== */
 function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 backdrop-blur bg-[#0B132B]/90 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Logo className="h-9 w-auto" />
+      <div
+        className="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-hidden"
+        style={{
+          // Altezza BARRA fissa e responsive; regola a piacere
+          height: 'clamp(56px, 7.5vw, 96px)',
+        }}
+      >
+        {/* Logo grande ma entro l’altezza della barra */}
+        <div className="h-full flex items-center">
+          <Logo />
         </div>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-gray-200">
+
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center gap-6 text-sm text-gray-200 leading-none">
           <a className="hover:text-white" href="#services">Services</a>
           <a className="hover:text-white" href="#features">Capabilities</a>
-          <a className="hover:text-white" href="#compliance">Security & Compliance</a>
+          <a className="hover:text-white" href="#compliance">Security &amp; Compliance</a>
         </nav>
-        <div className="flex items-center gap-2">
-          <a href="#cta" className="px-4 py-2 rounded-xl border border-white/20 hover:bg-white/10 text-sm">Login</a>
-          <a href="#cta" className="px-4 py-2 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">Open Individual Account</a>
-          <a href="#cta" className="px-4 py-2 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">Open Business Account</a>
+
+        {/* Buttons (compatti) */}
+        <div className="hidden sm:flex items-center gap-2 leading-none">
+          <a href="#cta" className="px-3 py-1.5 rounded-xl border border-white/20 hover:bg-white/10 text-sm">Login</a>
+          <a href="#cta" className="px-3 py-1.5 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">
+            Open Individual Account
+          </a>
+          <a href="#cta" className="px-3 py-1.5 rounded-xl bg-emerald-400 text-[#0B0E10] text-sm font-medium hover:bg-emerald-300">
+            Open Business Account
+          </a>
         </div>
       </div>
     </header>
   );
 }
 
-/* ---------------- Hero (NAVY full-width) ---------------- */
-function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
-  return (
-    <section className="relative overflow-hidden w-full bg-[#0B132B] text-white">
-      {/* soft glows */}
-      <div className="absolute inset-0 -z-10" aria-hidden>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 blur-3xl rounded-full" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-400/20 blur-3xl rounded-full" />
-      </div>
-      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border border-white/20 bg-white/5 text-white/90">
-            <IconSparkles className="w-3 h-3" /> Payments • Crypto • Exchange • Card
-          </span>
-          <h1 className="mt-4 text-4xl md:text-5xl font-semibold tracking-tight">Helvetia Financial Services</h1>
-          <p className="mt-4 text-white/80 text-lg max-w-xl">SEPA | SEPA Instant | TARGET2 | SWIFT Payments</p>
-          <p className="mt-2 text-white/80 text-lg max-w-xl">Fiat/Crypto | Crypto/Crypto |  Crypto Wallet</p>
-          <p className="mt-2 text-white/80 text-lg max-w-xl">Currency Exchange</p>
-          <p className="mt-2 text-white/80 text-lg max-w-xl">Debit Cards</p>
-
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">Open Individual Account</a>
-            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">Open Business Account</a>
-          </div>
-          <div className="mt-6 text-xs text-white/70 flex items-center gap-2"><IconLock className="w-4 h-4 text-emerald-300" /> AML / KYC / KYB / KYT / TR Compliance</div>
-          <div className="mt-2 text-xs text-white/70 flex items-center gap-2"><IconLock className="w-4 h-4 text-emerald-300" /> Accountant access with limited privileges</div>
-          <div className="mt-2 text-xs text-white/70 flex items-center gap-2"><IconLock className="w-4 h-4 text-emerald-300" /> Secure custody</div>
-        </div>
-        <div className="relative p-6 rounded-3xl border border-white/15 bg-white/5">
-          {/* simple hero visualization: branded debit card */}
-          <div className="relative mx-auto w-full max-w-md h-56 rounded-3xl bg-gradient-to-b from-white/10 to-white/0 border border-white/15">
-            <div className="absolute left-6 top-5"><Logo className="h-10 w-auto" /></div>
-            <div className="absolute right-6 bottom-5"><MastercardLogo className="h-8" /></div>
-            <div className="absolute left-6 bottom-6 text-white/90 tracking-widest text-xl">1234 5678 9012 3456</div>
-            <div className="absolute left-6 top-5 translate-y-10 text-xs text-white/70">Debit • 12/25</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Trust bar (bianco separatore) ---------------- */
-function TrustBar() {
-  return (
-    <section className="w-full border-y border-gray-200 bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-6 grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2"><IconUptime className="w-4 h-4 text-emerald-500" /> 99.99% platform uptime</div>
-        <div className="flex items-center gap-2"><IconShield className="w-4 h-4 text-emerald-500" /> Bank-grade security</div>
-        <div className="flex items-center gap-2"><IconApi className="w-4 h-4 text-emerald-500" /> Modern REST & Webhooks</div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Services (DARK BLUE full-width) ---------------- */
-function Services() {
-  return (
-    <section id="services" className="w-full bg-[#122B47] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-2xl md:text-3xl font-semibold">Services</h2>
-        <p className="mt-2 text-white/80 max-w-3xl">
-          One platform for Payments, Crypto Exchange, Digital Custody, Currency Exchange and Debit Cards
-        </p>
-        <div className="mt-8 grid md:grid-cols-3 gap-4">
-          <ServiceCard
-            icon={<IconEuro className="w-5 h-5" />}
-            title="IBAN for Payments"
-            desc={<>Dedicated Account for Payment Rails<br /><br />Real-time status & automated reconciliation</>}
-          />
-          <ServiceCard
-            icon={<IconCrypto className="w-5 h-5" />}
-            title="IBAN for Crypto Trading"
-            desc={<>Dedicated Account for Crypto Trading<br /><br />Real-time status & automated reconciliation</>}
-          />
-          <ServiceCard
-            icon={<IconCard className="w-5 h-5" />}
-            title="Debit Card"
-            desc={<>Dedicated Account for Debit Card<br /><br />Real-time status & automated reconciliation</>}
-          />
-          <ServiceCard
-            icon={<IconCrypto className="w-5 h-5" />}
-            title="Internal Transfer"
-            desc={<>Moving funds for free among your accounts instantly<br /><br />Real-time status & automated reconciliation</>}
-          />
-          <ServiceCard
-            icon={<IconCrypto className="w-5 h-5" />}
-            title="Wallet for Crypto"
-            desc={<>Store, Send and Receive<br />Any Crypto ... Any Network<br />Real-time status & automated reconciliation</>}
-          />
-          <ServiceCard
-            icon={<IconEuro className="w-5 h-5" />}
-            title="Currency Exchange"
-            desc={<>24/7 exchange & conversion<br />Top 10 currencies on the market<br />Real-time status & automated reconciliation</>}
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ServiceCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: React.ReactNode }) {
-  return (
-    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
-      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
-      <div className="mt-1 text-sm text-white/80">{desc}</div>
-    </div>
-  );
-}
-
-/* ---------------- Features (NAVY full-width) ---------------- */
-function Features() {
-  return (
-    <section id="features" className="w-full bg-[#0B132B] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-2xl md:text-3xl font-semibold">Capabilities</h2>
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-        <Feature icon={<IconZap className="w-5 h-5" />} title="Instant EUR" desc="SEPA Instant 24/7 with notifications." />
-        <Feature icon={<IconGlobe className="w-5 h-5" />} title="Global SWIFT" desc="Multi-currency payouts and collections." />
-        <Feature icon={<IconDev className="w-5 h-5" />} title="Developer-first" desc="Clean APIs, sandbox, webhooks and strong idempotency." />
-        </div>
-       </div>
-    </section>
-  );
-}
-
-function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
-  return (
-    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
-      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
-      <div className="mt-1 text-sm text-white/80">{desc}</div>
-    </div>
-  );
-}
-
-/* ---------------- Compliance (DARK BLUE full-width) ---------------- */
-function Compliance() {
-  return (
-    <section id="compliance" className="w-full bg-[#122B47] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-2xl md:text-3xl font-semibold">Security & Compliance</h2>
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-          <InfoCard icon={<IconShield className="w-5 h-5 text-emerald-300" />} title="Custody & Infrastructure" desc="Certified HSMs, segregated funds, fraud monitoring and geo-redundant backups in Switzerland." />
-          <InfoCard icon={<IconLock className="w-5 h-5 text-emerald-300" />} title="AML/KYC" desc="Bank-grade AML procedures, sanctions screening and Travel Rule support" />
-          <InfoCard icon={<IconSupport className="w-5 h-5 text-emerald-300" />} title="Dedicated Support" desc="24/7 assistance via chat, bot chat and email" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function InfoCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
-  return (
-    <div className="p-6 rounded-2xl border border-white/15 bg-white/5">
-      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
-      <div className="mt-2 text-sm text-white/80">{desc}</div>
-    </div>
-  );
-}
-
-/* ---------------- CTA (NAVY full-width) ---------------- */
-function CTA({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
-  return (
-    <section id="cta" className="w-full bg-[#0B132B] text-white">
-      <div className="max-w-7xl mx-auto px-4 pb-20 pt-16">
-        <div className="p-6 md:p-8 rounded-3xl border border-white/15 bg-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="text-2xl md:text-3xl font-semibold">Ready to get started?</h3>
-            <p className="mt-1 text-white/80">Open an account and access instant payments, crypto, and corporate cards.</p>
-          </div>
-          <form onSubmit={(e) => e.preventDefault()} className="flex w-full md:w-auto gap-2" aria-label="Get started form">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Business email"
-              aria-label="Business email"
-              className="flex-1 md:w-72 px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none border border-white/15"
-            />
-            <button className="px-5 py-3 rounded-2xl bg-emerald-400 text-[#0B0E10] font-medium hover:bg-emerald-300">Get started</button>
-          </form>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Footer (NAVY) ---------------- */
-function Footer() {
-  return (
-    <footer className="w-full border-t border-white/10 backdrop-blur bg-[#0B132B]/90 text-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8 text-sm">
-        <div className="space-y-2">
-          <Logo className="h-8 w-auto" />
-          <p className="text-gray-300">© {new Date().getFullYear()} Helvetia Financial Services & Software SA. All rights reserved.</p>
-        </div>
-        <div>
-          <div className="font-medium text-white">Products</div>
-          <ul className="mt-2 space-y-1 text-gray-300">
-            <li><a className="hover:text-white" href="#services">Payments</a></li>
-            <li><a className="hover:text-white" href="#services">Crypto</a></li>
-            <li><a className="hover:text-white" href="#services">Currency Exchange</a></li>
-            <li><a className="hover:text-white" href="#services">Debit Card</a></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-medium text-orange">Company</div>
-          <ul className="mt-2 space-y-1 text-gray-300">
-            <li><a className="hover:text-white" href="#compliance">Security</a></li>
-            <li><a className="hover:text-white" href="#features">Documentation</a></li>
-            <li><a className="hover:text-white" href="#">Careers</a></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-medium text-white">Contact</div>
-          <ul className="mt-2 space-y-1 text-gray-300">
-            <li>Zurich, Switzerland</li>
-            <li>+41 44 000 00 00</li>
-            <li>support@hfss.ch</li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-/* ---------------- Components: brand & icons ---------------- */
-function Logo({ className = '' }: { className?: string }) {
-  // Inline wordmark to avoid missing assets
-  return (
-    <div className={`flex items-center gap-2 ${className}`} aria-label="Helvetia Financial Services logo">
-      <svg viewBox="0 0 48 48" className="h-full" aria-hidden>
-        <circle cx="24" cy="24" r="22" fill="#10B981" opacity="0.15" />
-        <path d="M8 28c6-1 10-9 16-9s10 8 16 9" stroke="#10B981" strokeWidth="2" fill="none" />
-        <path d="M10 34h28" stroke="#10B981" strokeWidth="2" />
-      </svg>
-      <span className="text-white font-semibold tracking-tight">Helvetia FS</span>
-    </div>
-  );
-}
-
+/* ====================== Icone & brand ====================== */
 function MastercardLogo({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 40" className={className} aria-hidden>
@@ -294,7 +72,6 @@ function MastercardLogo({ className = '' }: { className?: string }) {
     </svg>
   );
 }
-
 function IconBase({ className = '', children }: { className?: string; children: React.ReactNode }) {
   return (
     <svg
@@ -323,3 +100,316 @@ function IconGlobe(props: any) { return (<IconBase {...props}><circle cx="12" cy
 function IconDev(props: any) { return (<IconBase {...props}><path d="M7 8l-4 4 4 4" /><path d="M17 8l4 4-4 4" /></IconBase>); }
 function IconShield(props: any) { return (<IconBase {...props}><path d="M12 2l7 3v6c0 5-3.5 9-7 11-3.5-2-7-6-7-11V5l7-3z" /></IconBase>); }
 function IconSupport(props: any) { return (<IconBase {...props}><path d="M6 9a6 6 0 1112 0v5a4 4 0 01-4 4H10a4 4 0 01-4-4z" /></IconBase>); }
+
+/* ====================== Sezioni ====================== */
+function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
+  return (
+    <section className="relative overflow-hidden w-full bg-[#0B132B] text-white">
+      {/* soft glows */}
+      <div className="absolute inset-0 -z-10" aria-hidden>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 blur-3xl rounded-full" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-400/20 blur-3xl rounded-full" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border border-white/20 bg-white/5 text-white/90">
+            <IconSparkles className="w-3 h-3" /> Payments • Crypto • Exchange • Card
+          </span>
+
+          <h1 className="mt-4 text-4xl md:text-5xl font-semibold tracking-tight">
+            Helvetia Financial Services
+          </h1>
+
+          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
+            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
+            <span>SEPA | SEPA Instant | TARGET2</span>
+          </p>
+
+          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
+            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
+            <span>FPS | CHAPS | BACS</span>
+          </p>
+
+          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
+            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
+            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
+            <img src="/images/currency/usd.svg" alt="Dollar" width={32} height={32} className="inline-block" />
+            <span>SWIFT Payments</span>
+          </p>
+
+          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
+            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
+            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
+            <img src="/images/currency/usd.svg" alt="Dollar" width={32} height={32} className="inline-block" />
+            <span>Currency Exchange</span>
+          </p>
+
+          <p className="mt-2 text-white/80 text-lg max-w-xl">Crypto Trading</p>
+          <p className="mt-2 text-white/80 text-lg max-w-xl">Debit Cards</p>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+              Open Individual Account
+            </a>
+            <a href="#cta" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+              Open Business Account
+            </a>
+          </div>
+
+          <div className="mt-6 text-xs text-white/70 flex items-center gap-2">
+            <IconLock className="w-4 h-4 text-emerald-300" /> AML / KYC / KYB / KYT / TR Compliance
+          </div>
+          <div className="mt-2 text-xs text-white/70 flex items-center gap-2">
+            <IconLock className="w-4 h-4 text-emerald-300" /> Accountant access with limited privileges
+          </div>
+          <div className="mt-2 text-xs text-white/70 flex items-center gap-2">
+            <IconLock className="w-4 h-4 text-emerald-300" /> Secure custody
+          </div>
+        </div>
+
+        
+    
+ 
+</div>
+
+
+
+      
+    </section>
+  );
+}
+
+function TrustBar() {
+  return (
+    <section className="w-full border-y border-gray-200 bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-6 grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
+        <div className="flex items-center gap-2"><IconUptime className="w-4 h-4 text-emerald-500" /> 99.99% platform uptime</div>
+        <div className="flex items-center gap-2"><IconShield className="w-4 h-4 text-emerald-500" /> Bank-grade security</div>
+        <div className="flex items-center gap-2"><IconApi className="w-4 h-4 text-emerald-500" /> Modern REST &amp; Webhooks</div>
+      </div>
+    </section>
+  );
+}
+
+function Services() {
+  return (
+    <section id="services" className="w-full bg-[#122B47] text-white">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-2xl md:text-3xl font-semibold">Services</h2>
+        <p className="mt-2 text-white/80 max-w-3xl">
+          One platform for Payments, Crypto Exchange, Digital Custody, Currency Exchange and Debit Cards
+        </p>
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
+          <ServiceCard icon={<IconEuro className="w-5 h-5" />} title="IBAN for Payments" desc={<>Dedicated Account for Payment Rails<br /><br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="IBAN for Crypto Trading" desc={<>Dedicated Account for Crypto Trading<br /><br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconCard className="w-5 h-5" />} title="Debit Card" desc={<>Dedicated Account for Debit Card<br /><br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="Internal Transfer" desc={<>Moving funds for free among your accounts instantly<br /><br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="Wallet for Crypto" desc={<>Store, Send and Receive<br />Any Crypto ... Any Network<br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconEuro className="w-5 h-5" />} title="Currency Exchange" desc={<>24/7 exchange &amp; conversion<br />Top 10 currencies on the market<br />Real-time status &amp; automated reconciliation</>} />
+        </div>
+      </div>
+    </section>
+  );
+}
+function ServiceCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: React.ReactNode }) {
+  return (
+    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
+      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
+      <div className="mt-1 text-sm text-white/80">{desc}</div>
+    </div>
+  );
+}
+
+function Features() {
+  return (
+    <section id="features" className="w-full bg-[#0B132B] text-white">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-2xl md:text-3xl font-semibold">Capabilities</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <Feature icon={<IconZap className="w-5 h-5" />} title="Instant EUR" desc="SEPA Instant 24/7 with notifications." />
+          <Feature icon={<IconGlobe className="w-5 h-5" />} title="Global SWIFT" desc="Multi-currency payouts and collections." />
+          <Feature icon={<IconDev className="w-5 h-5" />} title="Developer-first" desc="Clean APIs, sandbox, webhooks and strong idempotency." />
+        </div>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          
+          <div className="force-preline">
+           
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA" desc={`SEPA (Single Euro Payments Area) is a European initiative that allows for cashless euro payments to be made across Europe as easily as domestic payments.
+            It includes EU and some non-EU countries, standardizing cross-border transactions in euros for both credit transfers and direct debits. 
+            Payments made via SEPA are fast, secure, and efficient, and are identified using the IBAN and BIC codes.
+            
+            `
+              } />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA ISTANT" desc={`SEPA Instant is a service that allows for immediate credit transfers in euros within the SEPA (Single Euro Payments Area) zone, processing payments in under 10 seconds, 24 hours a day, 365 days a year.
+            It differs from standard SEPA payments, which typically take one to two business days and are processed only on weekdays.
+            SEPA Instant payments are subject to a limit of €100,000 per transaction.`
+              } />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`"Express payment" refers to any payment method that is faster and requires less effort than a standard transaction, with different meanings depending on the context.
+            It can describe a same-day bank transfer, a quick online checkout, or a specific type of small-value credit card transaction.
+            Essentially, it prioritizes speed and simplicity for the user.`
+
+            } />
+          </div>
+        </div>
+      
+       <div className="mt-6 grid md:grid-cols-3 gap-4">
+          
+          <div className="force-preline">
+           
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP FPS" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
+              Payments are typically sent and received within minutes, even on weekends and bank holidays.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP CHAPS" desc={`CHAPS is a same-day, high-value electronic payment service. 
+              Same-day transfer if sent before cut-off. 
+              No official upper limit.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP BACS" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+          </div>
+        </div>
+      
+ <div className="mt-6 grid md:grid-cols-3 gap-4">
+          
+          <div className="force-preline">
+           
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP FPS" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
+              Payments are typically sent and received within minutes, even on weekends and bank holidays.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP CHAPS" desc={`CHAPS is a same-day, high-value electronic payment service. 
+              Same-day transfer if sent before cut-off. 
+              No official upper limit.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP BACS" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+          </div>
+        </div>
+      </div>
+
+    </section>
+  );
+}
+function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
+      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
+      <div className="mt-1 text-sm text-white/80">{desc}</div>
+    </div>
+  );
+}
+
+function Compliance() {
+  return (
+    <section id="compliance" className="w-full bg-[#122B47] text-white">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-2xl md:text-3xl font-semibold">Security &amp; Compliance</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <InfoCard icon={<IconShield className="w-5 h-5 text-emerald-300" />} title="Custody &amp; Infrastructure" desc="Certified HSMs, segregated funds, fraud monitoring and geo-redundant backups in Switzerland." />
+          <InfoCard icon={<IconLock className="w-5 h-5 text-emerald-300" />} title="AML / KYC / KYB / KYT / TR Compliance" desc="Bank-grade AML procedures, sanctions screening and Travel Rule support" />
+          <InfoCard icon={<IconSupport className="w-5 h-5 text-emerald-300" />} title="Dedicated Support" desc="24/7 assistance via chat, bot chat and email" />
+        </div>
+      </div>
+    </section>
+  );
+}
+function InfoCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="p-6 rounded-2xl border border-white/15 bg-white/5">
+      <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
+      <div className="mt-2 text-sm text-white/80">{desc}</div>
+    </div>
+  );
+}
+
+function CTA({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
+  return (
+    <section id="cta" className="w-full bg-[#0B132B] text-white">
+      <div className="max-w-7xl mx-auto px-4 pb-20 pt-16">
+        <div className="p-6 md:p-8 rounded-3xl border border-white/15 bg-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-2xl md:text-3xl font-semibold">Ready to get started?</h3>
+            <p className="mt-1 text-white/80">Open an account and access instant payments, crypto, and corporate cards.</p>
+          </div>
+          <form onSubmit={(e) => e.preventDefault()} className="flex w-full md:w-auto gap-2" aria-label="Get started form">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Business email"
+              aria-label="Business email"
+              className="flex-1 md:w-72 px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none border border-white/15"
+            />
+            <button className="px-5 py-3 rounded-2xl bg-emerald-400 text-[#0B0E10] font-medium hover:bg-emerald-300">Get started</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="w-full border-t border-white/10 backdrop-blur bg-[#0B132B]/90 text-gray-200">
+      <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8 text-sm">
+        <div className="space-y-2">
+          <div className="h-8"><Logo /></div>
+          <p className="text-gray-300">© {new Date().getFullYear()} Helvetia Financial Services &amp; Software SA. All rights reserved.</p>
+        </div>
+        <div>
+          <div className="font-medium text-white">Products</div>
+          <ul className="mt-2 space-y-1 text-gray-300">
+            <li><a className="hover:text-white" href="#services">Payments</a></li>
+            <li><a className="hover:text-white" href="#services">Crypto</a></li>
+            <li><a className="hover:text-white" href="#services">Currency Exchange</a></li>
+            <li><a className="hover:text-white" href="#services">Debit Card</a></li>
+          </ul>
+        </div>
+        <div>
+          <div className="font-medium text-white">Company</div>
+          <ul className="mt-2 space-y-1 text-gray-300">
+            <li><a className="hover:text-white" href="#compliance">Security</a></li>
+            <li><a className="hover:text-white" href="#features">Documentation</a></li>
+            <li><a className="hover:text-white" href="#">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <div className="font-medium text-white">Contact</div>
+          <ul className="mt-2 space-y-1 text-gray-300">
+            <li>Rue Robert-Céard 6</li>
+            <li>1204 Geneve</li>
+            <li>Switzerland</li>
+            <li>support@hfss.ch</li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ====================== Export unico ====================== */
+function HomePageInner() {
+  const [email, setEmail] = useState('');
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      <Header />
+      <Hero email={email} setEmail={setEmail} />
+      <TrustBar />
+      <Services />
+      <Features />
+      <Compliance />
+      <CTA email={email} setEmail={setEmail} />
+      <Footer />
+    </div>
+  );
+}
+
+export default function HomePage() {
+  return <HomePageInner />;
+}

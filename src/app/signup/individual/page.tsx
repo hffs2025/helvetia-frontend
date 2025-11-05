@@ -1,4 +1,7 @@
 ﻿'use client';
+// opzione A – pagina totalmente statica
+export const dynamic = 'force-static';
+
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';

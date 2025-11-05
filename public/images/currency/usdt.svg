@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g-usdt" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#26A17B"/><stop offset="100%" stop-color="#0B5E3C"/>
+  </linearGradient></defs>
+  <circle cx="128" cy="128" r="120" fill="url(#g-usdt)"/>
+  <text x="128" y="128" text-anchor="middle" dominant-baseline="middle"
+        font-family="Arial, Helvetica, sans-serif" font-size="60" fill="#FFFFFF">USDT</text>
+</svg>
+
