@@ -1,4 +1,4 @@
-name: Build & Push to ECR
+name: Build & Push to ECR (debug)
 on:
   workflow_dispatch: {}
   push:
@@ -18,7 +18,7 @@ jobs:
       IMAGE_URI: 704761460520.dkr.ecr.eu-central-1.amazonaws.com/helvetia-frontend:v7
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials (OIDC)
@@ -27,15 +27,23 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: arn:aws:iam::704761460520:role/GitHubActions-ECRPush
 
+      - name: Who am I (STS)
+        run: aws sts get-caller-identity
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image
-        run: docker build --platform linux/amd64 -t $IMAGE_URI .
+      - name: Check ECR repo
+        run: aws ecr describe-repositories --repository-names "$ECR_REPO" --region "$AWS_REGION"
+
+      - name: Docker version
+        run: docker version
+
+      - name: Build Docker image (verbose)
+        run: |
+          set -eux
+          docker build --pull --no-cache --progress=plain --platform linux/amd64 \
+            -t "$IMAGE_URI" .
 
       - name: Push to Amazon ECR
-        run: docker push $IMAGE_URI
-
-      - name: Output image URI
-        run: |
-          echo "IMAGE pushed: $IMAGE_URI"
+        run: docker push "$IMAGE_URI"
