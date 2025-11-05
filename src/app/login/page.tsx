@@ -51,7 +51,7 @@ export default function Page() {
       {/* 🔹 LOGO CENTRALE, distanza minima */}
       <div className="flex flex-col items-center justify-center mb-1">
         <Image
-          src="/images/logo.png"    // assicurati che il file sia in public/images/logo.png
+          src="/images/Logo.png"    // assicurati che il file sia in public/images/logo.png
           alt="Helvetia Logo"
           width={150}
           height={150}
