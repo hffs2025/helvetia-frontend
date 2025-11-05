@@ -226,7 +226,7 @@ export default function Page() {
     >
       {/* Logo */}
       <div className="flex flex-col items-center mb-1">
-        <Image src="/images/logo.png" alt="Helvetia Logo" width={150} height={150} priority className="object-contain" />
+        <Image src="/images/Logo.png" alt="Helvetia Logo" width={150} height={150} priority className="object-contain" />
       </div>
 
       {/* Card */}
