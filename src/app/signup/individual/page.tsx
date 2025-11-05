@@ -2,7 +2,6 @@
 // opzione A – pagina totalmente statica
 export const dynamic = 'force-static';
 
-
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -226,7 +225,14 @@ export default function Page() {
     >
       {/* Logo */}
       <div className="flex flex-col items-center mb-1">
-        <Image src="/images/Logo.png" alt="Helvetia Logo" width={150} height={150} priority className="object-contain" />
+        <Image
+          src="/images/Logo.png" // usa path assoluto dalla public/ (case-sensitivo)
+          alt="Helvetia Logo"
+          width={150}
+          height={150}
+          priority
+          className="object-contain"
+        />
       </div>
 
       {/* Card */}

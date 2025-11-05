@@ -122,26 +122,18 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
           </h1>
 
           <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
             <span>SEPA | SEPA Instant | TARGET2</span>
           </p>
 
           <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
             <span>FPS | CHAPS | BACS</span>
           </p>
 
           <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
-            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
-            <img src="/images/currency/usd.svg" alt="Dollar" width={32} height={32} className="inline-block" />
-            <span>SWIFT Payments</span>
+             <span>SWIFT Payments</span>
           </p>
 
           <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <img src="/images/currency/eur.svg" alt="Euro" width={32} height={32} className="inline-block" />
-            <img src="/images/currency/gbp.svg" alt="Pound" width={32} height={32} className="inline-block" />
-            <img src="/images/currency/usd.svg" alt="Dollar" width={32} height={32} className="inline-block" />
             <span>Currency Exchange</span>
           </p>
 
@@ -226,32 +218,23 @@ function Features() {
     <section id="features" className="w-full bg-[#0B132B] text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold">Capabilities</h2>
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-          <Feature icon={<IconZap className="w-5 h-5" />} title="Instant EUR" desc="SEPA Instant 24/7 with notifications." />
-          <Feature icon={<IconGlobe className="w-5 h-5" />} title="Global SWIFT" desc="Multi-currency payouts and collections." />
-          <Feature icon={<IconDev className="w-5 h-5" />} title="Developer-first" desc="Clean APIs, sandbox, webhooks and strong idempotency." />
-        </div>
+       
         <div className="mt-6 grid md:grid-cols-3 gap-4">
           
           <div className="force-preline">
            
             <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA" desc={`SEPA (Single Euro Payments Area) is a European initiative that allows for cashless euro payments to be made across Europe as easily as domestic payments.
-            It includes EU and some non-EU countries, standardizing cross-border transactions in euros for both credit transfers and direct debits. 
-            Payments made via SEPA are fast, secure, and efficient, and are identified using the IBAN and BIC codes.
-            
             `
               } />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA ISTANT" desc={`SEPA Instant is a service that allows for immediate credit transfers in euros within the SEPA (Single Euro Payments Area) zone, processing payments in under 10 seconds, 24 hours a day, 365 days a year.
-            It differs from standard SEPA payments, which typically take one to two business days and are processed only on weekdays.
-            SEPA Instant payments are subject to a limit of €100,000 per transaction.`
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA ISTANT" desc={`SEPA Instant is a service that allows for immediate credit transfers in euros within the SEPA (Single Euro Payments Area) zone, processing payments, 24 hours a day, 365 days a year.
+            `
               } />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`"Express payment" refers to any payment method that is faster and requires less effort than a standard transaction, with different meanings depending on the context.
-            It can describe a same-day bank transfer, a quick online checkout, or a specific type of small-value credit card transaction.
-            Essentially, it prioritizes speed and simplicity for the user.`
+            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`"Express payment" refers to any payment method that is faster than Standards SEPA and, usually, takes few hours to complete a payment transaction.
+            `
 
             } />
           </div>
@@ -261,16 +244,19 @@ function Features() {
           
           <div className="force-preline">
            
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP FPS" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
-              Payments are typically sent and received within minutes, even on weekends and bank holidays.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Dedicated Crypto Account" desc={`EUR accounnt dedicated for Crypto Trading. 
+              On / Off Ramp
+              Crytpo / Crypto Trading
+              Several Networks`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP CHAPS" desc={`CHAPS is a same-day, high-value electronic payment service. 
-              Same-day transfer if sent before cut-off. 
-              No official upper limit.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Crypto Trading" desc={`All Crypto Trading activities 
+              On / Off Ramp
+              Crytpo / Crypto Trading
+              Several Networks`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP BACS" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Custodian Wallet" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
           </div>
         </div>
       
@@ -278,16 +264,16 @@ function Features() {
           
           <div className="force-preline">
            
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP FPS" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Currency Exchange" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
               Payments are typically sent and received within minutes, even on weekends and bank holidays.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP CHAPS" desc={`CHAPS is a same-day, high-value electronic payment service. 
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Debit Card" desc={`CHAPS is a same-day, high-value electronic payment service. 
               Same-day transfer if sent before cut-off. 
               No official upper limit.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="GBP BACS" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Developer First" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
           </div>
         </div>
       </div>
