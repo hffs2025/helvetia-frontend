@@ -37,5 +37,5 @@ jobs:
         run: docker push $IMAGE_URI
 
       - name: Output image URI
-        run: echo 'IMAGE pushed: $IMAGE_URI'
-
+        run: |
+          echo "IMAGE pushed: $IMAGE_URI"
