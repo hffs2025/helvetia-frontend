@@ -1,4 +1,5 @@
 'use client';
+// opzione A – pagina totalmente statica
 export const dynamic = 'force-static';
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
@@ -7,16 +8,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 
-// === Palette (flat dark blue) ===
-const BACKGROUND = '#071C2C';
+// === Palette (flat dark blue, senza gradient) ===
+const BACKGROUND = '#071C2C';   // sfondo piatto
+const NAVY = '#071C2C';     // backcolor piatto (come login)
 const ACCENT = '#4FD1C5';
 const ANTHRACITE = '#2B2B2B';
 const WHITE = '#FFFFFF';
 const PLACEHOLDER = '#A1A1AA';
-const BORDER_WHITE_10 = 'rgba(255,255,255,0.10)';
-const BORDER_WHITE_20 = 'rgba(255,255,255,0.20)';
-const SURFACE_WHITE_5 = 'rgba(255,255,255,0.05)';
-const SURFACE_WHITE_10 = 'rgba(255,255,255,0.10)';
 const DISABLED_BG = '#9CA3AF';
 
 type Country = { code: string; name: string; dial: string };
@@ -57,6 +55,7 @@ export default function Page() {
   // Company
   const [companyName, setCompanyName] = useState('');
   const [companyCountry, setCompanyCountry] = useState('');
+  const [regNum, setRegNum] = useState(''); // Registration Number
 
   // Contact + auth
   const [dialCountry, setDialCountry] = useState('');
@@ -81,6 +80,10 @@ export default function Page() {
   const [emailMsg, setEmailMsg] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  const [verifyingReg, setVerifyingReg] = useState(false);
+  const [regMsg, setRegMsg] = useState<string | null>(null);
+  const [regVerified, setRegVerified] = useState(false);
+
   const countries = useMemo(() => {
     const sorted = [...EU].sort((a, b) => a.name.localeCompare(b.name, 'en'));
     return [SWITZERLAND, ...attachDial(sorted)];
@@ -98,6 +101,8 @@ export default function Page() {
   const validate = (): string | null => {
     if (!companyName) return 'Please enter your company name.';
     if (!companyCountry) return 'Please select your company country.';
+    if (!regNum.trim()) return 'Please enter your company registration number.';
+    if (!regVerified) return 'Please verify your registration number.';
     if (!phoneOk) return 'Please enter a contact mobile number and prefix.';
     if (!emailOk) return 'Please enter a valid business email.';
     if (!passwordOk) return 'Password must be at least 8 characters.';
@@ -123,6 +128,11 @@ export default function Page() {
     setEmailVerified(false);
     setEmailMsg(null);
   }, [email]);
+
+  useEffect(() => {
+    setRegVerified(false);
+    setRegMsg(null);
+  }, [companyCountry, regNum]);
 
   // Handlers verifica
   const onVerifyMobile = useCallback(async () => {
@@ -183,16 +193,48 @@ export default function Page() {
     }
   }, [email, emailOk, normalizedEmail]);
 
-  // Create account: consentito solo se mobile+email verificate e terms accettati
-  const canSubmit = mobileVerified && emailVerified && accept && !loading;
+  const onVerifyReg = useCallback(async () => {
+    if (!companyCountry || !regNum.trim()) return;
+    setRegMsg(null);
+    setError(null);
+    setVerifyingReg(true);
+    try {
+      const res = await fetch('/api/signup/check-regnum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          country: companyCountry,
+          regnum: regNum.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Verification failed');
+      if (data.valid === true) {
+        setRegVerified(true);
+        setRegMsg('Registration number verified ✅');
+      } else {
+        setRegVerified(false);
+        setError('Invalid or already registered registration number.');
+      }
+    } catch (e: any) {
+      setRegVerified(false);
+      setError(e?.message || 'Verification failed');
+    } finally {
+      setVerifyingReg(false);
+    }
+  }, [companyCountry, regNum]);
+
+  // Create account: richiede anche regVerified
+  const canSubmit = mobileVerified && emailVerified && regVerified && accept && !loading;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setMobileMsg(null);
     setEmailMsg(null);
+    setRegMsg(null);
 
-    if (!canSubmit) return; // hard guard
+    if (!canSubmit) return;
 
     const msg = validate();
     if (msg) return setError(msg);
@@ -206,6 +248,7 @@ export default function Page() {
           type: 'business',
           companyName,
           companyCountry,
+          registrationNumber: regNum.trim(),
           mobileCountry: dialCountry,
           dialCode: DIAL[dialCountry],
           phone,
@@ -224,10 +267,10 @@ export default function Page() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center px-4" // <-- niente padding verticale
-      style={{ backgroundColor: BACKGROUND }}
+      className="min-h-screen w-full flex flex-col items-center px-4"
+      style={{ backgroundColor: NAVY }} // 🔹 flat backcolor senza gradient
     >
-      {/* Logo — 5px dal top e 5px di gap col container */}
+      {/* 🔹 LOGO — 5 px top + 5 px gap col container (uguale login) */}
       <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
         <Image
           src="/images/Logo.png"
@@ -239,11 +282,8 @@ export default function Page() {
         />
       </div>
 
-      {/* Card */}
-      <div
-        className="w-full max-w-[760px] mx-auto rounded-2xl backdrop-blur p-6 text-slate-100 shadow-xl"
-        style={{ border: `1px solid ${BORDER_WHITE_10}`, background: SURFACE_WHITE_5 }}
-      >
+      {/* 🔹 CARD SIGNUP — larghezza 760 px */}
+      <div className="w-full max-w-[760px] rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Sign up</h1>
           <p className="text-slate-300 text-sm mt-1">Business Account</p>
@@ -251,44 +291,69 @@ export default function Page() {
 
         <form className="grid gap-4" onSubmit={onSubmit}>
           {/* Company */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="grid gap-2 sm:col-span-2">
-              <label className="text-sm text-slate-200">Company name</label>
-              <input
-                className="h-11 rounded-xl px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                style={{ background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
-                placeholder="Acme SA"
-                value={companyName}
-                onChange={e => setCompanyName(e.target.value)}
-                required
-              />
-            </div>
+          <div className="grid gap-2">
+            <label className="text-sm text-slate-200">Company name</label>
+            <input
+              className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="Acme SA"
+              value={companyName}
+              onChange={e => setCompanyName(e.target.value)}
+              required
+            />
           </div>
 
-          {/* Company country */}
+          {/* Company country + Registration Number */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Company country</label>
-            <select
-              value={companyCountry}
-              onChange={e => setCompanyCountry(e.target.value)}
-              className="h-11 rounded-xl px-3 outline-none focus:ring-2 focus:ring-white/30"
-              style={{
-                background: SURFACE_WHITE_10,
-                border: `1px solid ${BORDER_WHITE_20}`,
-                color: companyCountry ? WHITE : PLACEHOLDER,
-              }}
-              required
-            >
-              <option value="" disabled>Select company country</option>
-              {([SWITZERLAND, ...attachDial([...EU])]).map(({ code, name }) => (
-                <option key={code} value={code} style={{ color: ANTHRACITE }}>
-                  {flagEmoji(code)} {` ${code} — ${name}`}
-                </option>
-              ))}
-            </select>
+            <label className="text-sm text-slate-200">Company country & Registration</label>
+            <div className="grid gap-3" style={{ gridTemplateColumns: '230px 1fr 150px' }}>
+              <select
+                value={companyCountry}
+                onChange={e => setCompanyCountry(e.target.value)}
+                className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
+                style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: companyCountry ? WHITE : PLACEHOLDER }}
+                required
+              >
+                <option value="" disabled>Select company country</option>
+                {countries.map(({ code, name }) => (
+                  <option key={code} value={code} style={{ color: ANTHRACITE }}>
+                    {flagEmoji(code)} {` ${code} — ${name}`}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                value={regNum}
+                onChange={e => setRegNum(e.target.value)}
+                placeholder="Registration Number"
+                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                required
+              />
+
+              {regVerified ? (
+                <div
+                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                  style={{ width: 150 }}
+                  aria-live="polite"
+                >
+                  Reg no. verified ✅
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onVerifyReg}
+                  disabled={!companyCountry || !regNum.trim() || verifyingReg}
+                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: 150, color: WHITE }}
+                  aria-live="polite"
+                >
+                  {verifyingReg ? 'Checking…' : 'Verify Reg Num'}
+                </button>
+              )}
+            </div>
             <p className="text-xs text-slate-400">
               Includes Switzerland and all European Union member states.
             </p>
+            {regMsg && <p className="text-xs text-emerald-300">{regMsg}</p>}
           </div>
 
           {/* Mobile */}
@@ -298,16 +363,12 @@ export default function Page() {
               <select
                 value={dialCountry}
                 onChange={e => setDialCountry(e.target.value)}
-                className="h-11 rounded-xl px-3 outline-none focus:ring-2 focus:ring-white/30"
-                style={{
-                  background: SURFACE_WHITE_10,
-                  border: `1px solid ${BORDER_WHITE_20}`,
-                  color: dialCountry ? WHITE : PLACEHOLDER,
-                }}
+                className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
+                style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: dialCountry ? WHITE : PLACEHOLDER }}
                 required
               >
                 <option value="" disabled>Select prefix</option>
-                {([SWITZERLAND, ...attachDial([...EU])]).map(({ code, name, dial }) => (
+                {countries.map(({ code, name, dial }) => (
                   <option key={code} value={code} style={{ color: ANTHRACITE }}>
                     {flagEmoji(code)} {` +${dial} — ${code} — ${name}`}
                   </option>
@@ -319,15 +380,14 @@ export default function Page() {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Mobile number"
-                className="h-11 rounded-xl px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                style={{ background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 required
               />
 
               {mobileVerified ? (
                 <div
-                  className="h-11 flex items-center justify-center rounded-xl text-emerald-300"
-                  style={{ width: 150, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(16,185,129,0.10)' }}
+                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                  style={{ width: 150 }}
                   aria-live="polite"
                 >
                   Mobile verified ✅
@@ -337,8 +397,8 @@ export default function Page() {
                   type="button"
                   onClick={onVerifyMobile}
                   disabled={!phoneOk || verifyingMobile}
-                  className="h-11 rounded-xl text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ width: 150, color: WHITE, background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: 150, color: WHITE }}
                   aria-live="polite"
                 >
                   {verifyingMobile ? 'Checking…' : 'Verify Mobile'}
@@ -357,14 +417,13 @@ export default function Page() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="h-11 rounded-xl px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                style={{ background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 required
               />
               {emailVerified ? (
                 <div
-                  className="h-11 flex items-center justify-center rounded-xl text-emerald-300"
-                  style={{ width: 150, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(16,185,129,0.10)' }}
+                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                  style={{ width: 150 }}
                   aria-live="polite"
                 >
                   Email verified ✅
@@ -374,8 +433,8 @@ export default function Page() {
                   type="button"
                   onClick={onVerifyEmail}
                   disabled={!emailOk || verifyingEmail}
-                  className="h-11 rounded-xl text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ width: 150, color: WHITE, background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: 150, color: WHITE }}
                   aria-live="polite"
                 >
                   {verifyingEmail ? 'Checking…' : 'Verify Email'}
@@ -395,8 +454,7 @@ export default function Page() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="h-11 w-full rounded-xl px-3 pr-10 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                  style={{ background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                  className="h-11 w-full rounded-xl bg-white/10 border border-white/20 px-3 pr-10 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                   required
                 />
                 <button
@@ -414,8 +472,7 @@ export default function Page() {
                   value={confirm}
                   onChange={e => setConfirm(e.target.value)}
                   placeholder="Confirm password"
-                  className="h-11 w-full rounded-xl px-3 pr-10 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                  style={{ background: SURFACE_WHITE_10, border: `1px solid ${BORDER_WHITE_20}` }}
+                  className="h-11 w-full rounded-xl bg-white/10 border border-white/20 px-3 pr-10 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                   required
                 />
                 <button
@@ -435,27 +492,22 @@ export default function Page() {
               type="checkbox"
               checked={accept}
               onChange={e => setAccept(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded"
-              style={{ border: `1px solid ${BORDER_WHITE_20}`, background: SURFACE_WHITE_10 }}
+              className="mt-1 h-4 w-4 rounded border-white/30 bg-white/10"
             />
             <span>
               I accept the <a href="#" className="underline hover:text-slate-100">Terms</a>,{' '}
-              <a href="#" className="underline hover:text-slate-100">Privacy Policy</a>{' '}
-              and the <a href="#" className="underline hover:text-slate-100">Data Processing Addendum</a>.
+              and the <a href="#" className="underline hover:text-slate-100">Privacy Policy</a>{' '}.
             </span>
           </label>
 
           {error && (
-            <div
-              className="text-sm text-center p-3 rounded-lg text-rose-200"
-              style={{ background: 'rgba(244,63,94,0.10)', border: '1px solid rgba(244,63,94,0.20)' }}
-            >
+            <div className="text-sm text-center p-3 rounded-lg bg-rose-500/10 text-rose-200 border border-rose-500/20">
               {error}
             </div>
           )}
 
           {/* Submit */}
-          <div className="flex justify-center">
+         <div className="flex justify-center">
             <button
               type="submit"
               disabled={!canSubmit}
