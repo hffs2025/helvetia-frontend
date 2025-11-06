@@ -4,6 +4,12 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+/* ====================== Palette (flat dark blue) ====================== */
+const BACKGROUND = '#071C2C';   // dark blue piatto per lo sfondo
+const ACCENT = '#4FD1C5';
+const SURFACE_5 = 'rgba(255,255,255,0.05)';  // pannello leggero su dark
+const SURFACE_8 = 'rgba(255,255,255,0.08)';  // pannello un pelo più chiaro
+
 /* ====================== Logo (PNG, fill header height) ====================== */
 function Logo() {
   return (
@@ -11,16 +17,12 @@ function Logo() {
       <Image
         src="/images/Logo.png"
         alt="Helvetia Financial Services"
-        width={1200}           // valori intrinseci alti (per qualità)
+        width={1200}
         height={450}
         priority
         className="select-none pointer-events-none"
         sizes="(max-width: 768px) 240px, (max-width: 1024px) 300px, 380px"
-        style={{
-          height: '170%',      // il logo non supera l’altezza della barra
-          width: 'auto',
-          display: 'block',
-        }}
+        style={{ height: '170%', width: 'auto', display: 'block' }}
       />
     </div>
   );
@@ -28,31 +30,46 @@ function Logo() {
 
 /* ====================== Header (altezza fissa + responsive) ====================== */
 function Header() {
+  // scroll fluido alle sezioni
+  const handleScroll = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 backdrop-blur bg-[#0B132B]/90 text-white">
+    <header
+      className="sticky top-0 z-40 w-full border-b border-white/10 text-white"
+      style={{ backgroundColor: BACKGROUND }} // colore pieno, senza trasparenza
+    >
       <div
         className="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-hidden"
-        style={{
-          // Altezza BARRA fissa e responsive; regola a piacere
-          height: 'clamp(56px, 7.5vw, 96px)',
-        }}
+        style={{ height: 'clamp(56px, 7.5vw, 96px)' }}
       >
-        {/* Logo grande ma entro l’altezza della barra */}
+        {/* Logo */}
         <div className="h-full flex items-center">
           <Logo />
         </div>
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-sm text-gray-200 leading-none">
-          <a className="hover:text-white" href="#services">Services</a>
-          <a className="hover:text-white" href="#features">Capabilities</a>
-          <a className="hover:text-white" href="#compliance">Security &amp; Compliance</a>
-          <a className="hover:text-white" href="#features">How to Sign Up</a>
-          <a className="hover:text-white" href="#compliance">Our Dashboard</a>
-        
+          <a className="hover:text-white cursor-pointer" href="#services">Services</a>
+          <a className="hover:text-white cursor-pointer" href="#features">Capabilities</a>
+          <a className="hover:text-white cursor-pointer" href="#compliance">Security &amp; Compliance</a>
+          <button
+            onClick={() => handleScroll('how-to-signup')}
+            className="hover:text-white cursor-pointer bg-transparent border-none outline-none text-gray-200 text-sm"
+          >
+            How to Sign Up
+          </button>
+          <button
+            onClick={() => handleScroll('our-dashboard')}
+            className="hover:text-white cursor-pointer bg-transparent border-none outline-none text-gray-200 text-sm"
+          >
+            Our Dashboard
+          </button>
         </nav>
 
-        {/* Buttons (compatti) */}
+        {/* Buttons */}
         <div className="hidden sm:flex items-center gap-2 leading-none">
           <Link
             href="/login"
@@ -66,6 +83,7 @@ function Header() {
   );
 }
 
+
 /* ====================== Icone & brand ====================== */
 function MastercardLogo({ className = '' }: { className?: string }) {
   return (
@@ -77,16 +95,7 @@ function MastercardLogo({ className = '' }: { className?: string }) {
 }
 function IconBase({ className = '', children }: { className?: string; children: React.ReactNode }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {children}
     </svg>
   );
@@ -99,22 +108,18 @@ function IconEuro(props: any) { return (<IconBase {...props}><path d="M4 10h10M4
 function IconCrypto(props: any) { return (<IconBase {...props}><path d="M6 12a6 6 0 1012 0 6 6 0 10-12 0z" /><path d="M8 12h8" /></IconBase>); }
 function IconCard(props: any) { return (<IconBase {...props}><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 11h18" /></IconBase>); }
 function IconZap(props: any) { return (<IconBase {...props}><path d="M13 2L3 14h7l-1 8 10-12h-7z" /></IconBase>); }
-function IconGlobe(props: any) { return (<IconBase {...props}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 010 18 14 14 0 010-18z" /></IconBase>); }
-function IconDev(props: any) { return (<IconBase {...props}><path d="M7 8l-4 4 4 4" /><path d="M17 8l4 4-4 4" /></IconBase>); }
 function IconShield(props: any) { return (<IconBase {...props}><path d="M12 2l7 3v6c0 5-3.5 9-7 11-3.5-2-7-6-7-11V5l7-3z" /></IconBase>); }
 function IconSupport(props: any) { return (<IconBase {...props}><path d="M6 9a6 6 0 1112 0v5a4 4 0 01-4 4H10a4 4 0 01-4-4z" /></IconBase>); }
 
 /* ====================== Sezioni ====================== */
-function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
+function Hero() {
   return (
-    <section className="relative overflow-hidden w-full bg-[#0B132B] text-white">
-      {/* soft glows */}
-      <div className="absolute inset-0 -z-10" aria-hidden>
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-400/20 blur-3xl rounded-full" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cyan-400/20 blur-3xl rounded-full" />
-      </div>
-
+    <section
+      className="relative overflow-hidden w-full text-white"
+      style={{ backgroundColor: BACKGROUND }}
+    >
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+        {/* Colonna sinistra: testo */}
         <div>
           <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border border-white/20 bg-white/5 text-white/90">
             <IconSparkles className="w-3 h-3" /> Payments • Crypto • Exchange • Card
@@ -124,34 +129,33 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
             Helvetia Financial Services
           </h1>
 
-          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <span>SEPA | SEPA Instant | TARGET2</span>
-          </p>
+          {/* elenco servizi con spaziatura uniforme */}
+          <div className="mt-6 space-y-3 text-white/80 text-lg max-w-xl">
+            <p>SEPA | SEPA Instant | TARGET2</p>
+            <p>FPS | CHAPS | BACS</p>
+            <p>SWIFT Payments</p>
+            <p>Currency Exchange</p>
+            <p>Crypto Trading</p>
+            <p>Debit Cards</p>
+          </div>
 
-          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <span>FPS | CHAPS | BACS</span>
-          </p>
-
-          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-             <span>SWIFT Payments</span>
-          </p>
-
-          <p className="mt-4 text-white/80 text-lg max-w-xl flex items-center gap-3">
-            <span>Currency Exchange</span>
-          </p>
-
-          <p className="mt-2 text-white/80 text-lg max-w-xl">Crypto Trading</p>
-          <p className="mt-2 text-white/80 text-lg max-w-xl">Debit Cards</p>
-
+          {/* Pulsanti */}
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <Link href="/signup/individual" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+            <Link
+              href="/signup/individual"
+              className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
+            >
               Open Individual Account
             </Link>
-            <Link href="/signup/business" className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm">
+            <Link
+              href="/signup/business"
+              className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
+            >
               Open Business Account
             </Link>
           </div>
 
+          {/* Info di sicurezza */}
           <div className="mt-6 text-xs text-white/70 flex items-center gap-2">
             <IconLock className="w-4 h-4 text-emerald-300" /> AML / KYC / KYB / KYT / TR Compliance
           </div>
@@ -162,6 +166,20 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
             <IconLock className="w-4 h-4 text-emerald-300" /> Secure custody
           </div>
         </div>
+
+        {/* Colonna destra: immagine Supind.png */}
+        <div className="flex items-center justify-center">
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Supind.png"
+              alt="Helvetia signup illustration"
+              width={500}
+              height={400}
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -169,19 +187,30 @@ function Hero({ email, setEmail }: { email: string; setEmail: (v: string) => voi
 
 function TrustBar() {
   return (
-    <section className="w-full border-y border-gray-200 bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-6 grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2"><IconUptime className="w-4 h-4 text-emerald-500" /> 99.99% platform uptime</div>
-        <div className="flex items-center gap-2"><IconShield className="w-4 h-4 text-emerald-500" /> Bank-grade security</div>
-        <div className="flex items-center gap-2"><IconApi className="w-4 h-4 text-emerald-500" /> Modern REST &amp; Webhooks</div>
+    <section className="w-full border-y border-gray-200 bg-white text-gray-700">
+      <div className="max-w-7xl mx-auto px-4 py-6 grid sm:grid-cols-3 gap-4 text-sm text-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <IconUptime className="w-4 h-4 text-emerald-500" />
+          <span>99.99% platform uptime</span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <IconShield className="w-4 h-4 text-emerald-500" />
+          <span>Bank-grade security</span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <IconApi className="w-4 h-4 text-emerald-500" />
+          <span>Modern REST &amp; Webhooks</span>
+        </div>
       </div>
     </section>
   );
 }
 
+
+
 function Services() {
   return (
-    <section id="services" className="w-full bg-[#122B47] text-white">
+    <section id="services" className="w-full text-white" style={{ backgroundColor: BACKGROUND }}>
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold">Services</h2>
         <p className="mt-2 text-white/80 max-w-3xl">
@@ -192,7 +221,7 @@ function Services() {
           <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="IBAN for Crypto Trading" desc={<>Dedicated Account for Crypto Trading<br /><br />Real-time status &amp; automated reconciliation</>} />
           <ServiceCard icon={<IconCard className="w-5 h-5" />} title="Debit Card" desc={<>Dedicated Account for Debit Card<br /><br />Real-time status &amp; automated reconciliation</>} />
           <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="Internal Transfer" desc={<>Moving funds for free among your accounts instantly<br /><br />Real-time status &amp; automated reconciliation</>} />
-          <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="Wallet for Crypto" desc={<>Store, Send and Receive<br />Any Crypto ... Any Network<br />Real-time status &amp; automated reconciliation</>} />
+          <ServiceCard icon={<IconCrypto className="w-5 h-5" />} title="Wallet for Crypto" desc={<>Store, Send and Receive<br />Any Crypto • Any Network<br />Real-time status &amp; automated reconciliation</>} />
           <ServiceCard icon={<IconEuro className="w-5 h-5" />} title="Currency Exchange" desc={<>24/7 exchange &amp; conversion<br />Top 10 currencies on the market<br />Real-time status &amp; automated reconciliation</>} />
         </div>
       </div>
@@ -201,7 +230,7 @@ function Services() {
 }
 function ServiceCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: React.ReactNode }) {
   return (
-    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
+    <div className="p-5 rounded-2xl border border-white/15" style={{ background: SURFACE_5 }}>
       <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
       <div className="mt-1 text-sm text-white/80">{desc}</div>
     </div>
@@ -210,75 +239,52 @@ function ServiceCard({ icon, title, desc }: { icon: React.ReactNode; title: stri
 
 function Features() {
   return (
-    <section id="features" className="w-full bg-[#0B132B] text-white">
+    <section id="features" className="w-full text-white" style={{ background: SURFACE_5 }}>
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold">Capabilities</h2>
-       
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-          
-          <div className="force-preline">
-           
-            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA" desc={`SEPA (Single Euro Payments Area) is a European initiative that allows for cashless euro payments to be made across Europe as easily as domestic payments.
-            `
-              } />
-          </div>
-          <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA ISTANT" desc={`SEPA Instant is a service that allows for immediate credit transfers in euros within the SEPA (Single Euro Payments Area) zone, processing payments, 24 hours a day, 365 days a year.
-            `
-              } />
-          </div>
-          <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`"Express payment" refers to any payment method that is faster than Standards SEPA and, usually, takes few hours to complete a payment transaction.
-            `
 
-            } />
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA" desc={`SEPA (Single Euro Payments Area) enables cashless euro payments across Europe as easily as domestic transfers.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA INSTANT" desc={`Immediate euro credit transfers 24/7/365 within SEPA.`} />
+          </div>
+          <div className="force-preline">
+            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`Faster-than-standard payments, typically settled within hours.`} />
           </div>
         </div>
-      
-       <div className="mt-6 grid md:grid-cols-3 gap-4">
-          
+
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
           <div className="force-preline">
-           
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Dedicated Crypto Account" desc={`EUR accounnt dedicated for Crypto Trading. 
-              On / Off Ramp
-              Crytpo / Crypto Trading
-              Several Networks`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Dedicated Crypto Account" desc={`EUR account dedicated to Crypto Trading • On/Off Ramp • Multiple networks.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Crypto Trading" desc={`All Crypto Trading activities 
-              On / Off Ramp
-              Crytpo / Crypto Trading
-              Several Networks`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Crypto Trading" desc={`All trading activities • On/Off Ramp • Crypto/Crypto • Multiple networks.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Custodian Wallet" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Custodian Wallet" desc={`Secure custody with bank-grade infrastructure.`} />
           </div>
         </div>
-      
- <div className="mt-6 grid md:grid-cols-3 gap-4">
-          
+
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
           <div className="force-preline">
-           
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Currency Exchange" desc={`For fast payments in GBP, the Faster Payments Service (FPS) is the standard for near-instant transfers within the UK, available 24/7. 
-              Payments are typically sent and received within minutes, even on weekends and bank holidays.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Currency Exchange" desc={`24/7 conversion with competitive rates.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Debit Card" desc={`CHAPS is a same-day, high-value electronic payment service. 
-              Same-day transfer if sent before cut-off. 
-              No official upper limit.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Debit Card" desc={`Instant card issuing and management.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Developer First" desc={`Bacs is a secure UK bank-to-bank transfer processed in three working days (Direct Credit / Direct Debit).`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Developer First" desc={`Modern APIs • Webhooks • Sandbox for rapid integration.`} />
           </div>
         </div>
       </div>
-
     </section>
   );
 }
 function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="p-5 rounded-2xl border border-white/15 bg-white/5">
+    <div className="p-5 rounded-2xl border border-white/15" style={{ background: SURFACE_8 }}>
       <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
       <div className="mt-1 text-sm text-white/80">{desc}</div>
     </div>
@@ -287,13 +293,13 @@ function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; 
 
 function Compliance() {
   return (
-    <section id="compliance" className="w-full bg-[#122B47] text-white">
+    <section id="compliance" className="w-full text-white" style={{ backgroundColor: BACKGROUND }}>
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold">Security &amp; Compliance</h2>
         <div className="mt-6 grid md:grid-cols-3 gap-4">
-          <InfoCard icon={<IconShield className="w-5 h-5 text-emerald-300" />} title="Custody &amp; Infrastructure" desc="Certified HSMs, segregated funds, fraud monitoring and geo-redundant backups in Switzerland." />
-          <InfoCard icon={<IconLock className="w-5 h-5 text-emerald-300" />} title="AML / KYC / KYB / KYT / TR Compliance" desc="Bank-grade AML procedures, sanctions screening and Travel Rule support" />
-          <InfoCard icon={<IconSupport className="w-5 h-5 text-emerald-300" />} title="Dedicated Support" desc="24/7 assistance via chat, bot chat and email" />
+          <InfoCard icon={<IconShield className="w-5 h-5 text-emerald-300" />} title="Custody &amp; Infrastructure" desc="Certified HSMs, segregated funds, fraud monitoring, geo-redundant backups in Switzerland." />
+          <InfoCard icon={<IconLock className="w-5 h-5 text-emerald-300" />} title="AML / KYC / KYB / KYT / TR" desc="Bank-grade AML procedures, sanctions screening and Travel Rule support." />
+          <InfoCard icon={<IconSupport className="w-5 h-5 text-emerald-300" />} title="Dedicated Support" desc="24/7 assistance via chat and email." />
         </div>
       </div>
     </section>
@@ -301,43 +307,167 @@ function Compliance() {
 }
 function InfoCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="p-6 rounded-2xl border border-white/15 bg-white/5">
+    <div className="p-6 rounded-2xl border border-white/15" style={{ background: SURFACE_5 }}>
       <div className="flex items-center gap-2 text-white font-medium">{icon} {title}</div>
       <div className="mt-2 text-sm text-white/80">{desc}</div>
     </div>
   );
 }
 
-function CTA({ email, setEmail }: { email: string; setEmail: (v: string) => void }) {
+/* ====================== Nuovi moduli alternati ====================== */
+function HowToSignUp() {
   return (
-    <section id="cta" className="w-full bg-[#0B132B] text-white">
-      <div className="max-w-7xl mx-auto px-4 pb-20 pt-16">
-        <div className="p-6 md:p-8 rounded-3xl border border-white/15 bg-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="text-2xl md:text-3xl font-semibold">Ready to get started?</h3>
-            <p className="mt-1 text-white/80">Open an account and access instant payments, crypto, and corporate cards.</p>
+    <section
+      id="how-to-signup"
+      className="w-full text-white"
+      style={{ background: 'rgba(255,255,255,0.05)' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-10">How to Sign Up</h2>
+
+        {/* Griglia con due colonne */}
+        <div className="grid md:grid-cols-2 gap-8 justify-items-center">
+          {/* Individual Account */}
+          <div className="flex flex-col items-center gap-4 w-full max-w-md">
+            <div className="w-full rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+              <Image
+                src="/images/Supind.png"
+                alt="How to sign up — Individual account"
+                width={500}
+                height={300}
+                className="object-contain"
+                priority
+              />
+            </div>
+            <Link
+              href="/signup/individual"
+              className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
+            >
+              Open Individual Account
+            </Link>
           </div>
-          <form onSubmit={(e) => e.preventDefault()} className="flex w-full md:w-auto gap-2" aria-label="Get started form">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Business email"
-              aria-label="Business email"
-              className="flex-1 md:w-72 px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none border border-white/15"
-            />
-            <button className="px-5 py-3 rounded-2xl bg-emerald-400 text-[#0B0E10] font-medium hover:bg-emerald-300">Get started</button>
-          </form>
+
+          {/* Business Account */}
+          <div className="flex flex-col items-center gap-4 w-full max-w-md">
+            <div className="w-full rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+              <Image
+                src="/images/Supbus.png"
+                alt="How to sign up — Business account"
+                width={500}
+                height={300}
+                className="object-contain"
+                priority
+              />
+            </div>
+            <Link
+              href="/signup/business"
+              className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
+            >
+              Open Business Account
+            </Link>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+
+
+function OurDashboard() {
+  return (
+    <section
+      id="our-dashboard"
+      className="w-full text-white"
+      style={{ backgroundColor: BACKGROUND }}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-10">Our Dashboard</h2>
+
+        {/* Griglia 3x2 di immagini */}
+        <div className="grid md:grid-cols-3 gap-8 justify-items-center">
+          {/* Dash1 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash1.png"
+              alt="Dashboard preview 1"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Dash2 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash2.png"
+              alt="Dashboard preview 2"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Dash3 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash3.png"
+              alt="Dashboard preview 3"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Dash4 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash4.png"
+              alt="Dashboard preview 4"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Dash5 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash5.png"
+              alt="Dashboard preview 5"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Dash6 */}
+          <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+            <Image
+              src="/images/Dash6.png"
+              alt="Dashboard preview 6"
+              width={500}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+/* ====================== Footer ====================== */
 function Footer() {
   return (
-    <footer className="w-full border-t border-white/10 backdrop-blur bg-[#0B132B]/90 text-gray-200">
+    <footer className="w-full border-t border-white/10 backdrop-blur text-gray-200" style={{ backgroundColor: BACKGROUND + 'E6' }}>
       <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8 text-sm">
         <div className="space-y-2">
           <div className="h-8"><Logo /></div>
@@ -355,7 +485,7 @@ function Footer() {
         <div>
           <div className="font-medium text-white">Company</div>
           <ul className="mt-2 space-y-1 text-gray-300">
-             <li><a className="hover:text-white" href="#compliance">Authorization</a></li>
+            <li><a className="hover:text-white" href="#compliance">Authorization</a></li>
             <li><a className="hover:text-white" href="#compliance">Security</a></li>
             <li><a className="hover:text-white" href="#features">Documentation</a></li>
             <li><a className="hover:text-white" href="#">Careers</a></li>
@@ -377,16 +507,20 @@ function Footer() {
 
 /* ====================== Export unico ====================== */
 function HomePageInner() {
-  const [email, setEmail] = useState('');
+  // email non più usata (abbiamo rimosso la CTA), la lascio se vorrai riutilizzarla
+  const [email] = useState('');
+
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen text-white" style={{ backgroundColor: BACKGROUND }}>
       <Header />
-      <Hero email={email} setEmail={setEmail} />
+      <Hero />
       <TrustBar />
       <Services />
       <Features />
       <Compliance />
-      <CTA email={email} setEmail={setEmail} />
+      {/* Nuovi moduli a colori alternati */}
+      <HowToSignUp />
+      <OurDashboard />
       <Footer />
     </div>
   );

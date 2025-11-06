@@ -8,10 +8,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 
-// === Palette aggiornata (dark blue) ===
-const NAVY = '#071C2C';       // blu scuro principale
-const NAVY_DARK = '#020A14';  // blu quasi nero per il fondo
-const ACCENT = '#4FD1C5';
+// === Palette (flat dark blue) ===
+const BACKGROUND = '#071C2C';   // sfondo piatto
+const ACCENT = '#4FD1C5';       // primary action
 const ANTHRACITE = '#2B2B2B';
 const WHITE = '#FFFFFF';
 const PLACEHOLDER = '#A1A1AA';
@@ -218,16 +217,13 @@ export default function Page() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-4"
-      style={{
-        background: `radial-gradient(1200px 600px at 10% -10%, ${ACCENT}20, transparent),
-                     linear-gradient(180deg, ${NAVY}, ${NAVY_DARK})`,
-      }}
+      className="min-h-screen flex flex-col items-center px-4"
+      style={{ backgroundColor: BACKGROUND }}  // flat, no gradient
     >
-      {/* Logo */}
-      <div className="flex flex-col items-center mb-1">
+      {/* Logo — 5px dal top e 5px di gap col container */}
+      <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
         <Image
-          src="/images/Logo.png" // usa path assoluto dalla public/ (case-sensitivo)
+          src="/images/Logo.png"
           alt="Helvetia Logo"
           width={150}
           height={150}
@@ -318,7 +314,6 @@ export default function Page() {
                 required
               />
 
-              {/* Bottone Verify Mobile o badge verified */}
               {mobileVerified ? (
                 <div
                   className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
@@ -448,7 +443,7 @@ export default function Page() {
               type="submit"
               disabled={!canSubmit}
               className="h-11 w-[300px] rounded-xl font-medium transition-colors"
-              style={{ backgroundColor: canSubmit ? ACCENT : DISABLED_BG, color: NAVY_DARK }}
+              style={{ backgroundColor: canSubmit ? ACCENT : DISABLED_BG, color: BACKGROUND }}
             >
               {loading ? 'Creating account…' : 'Create account'}
             </button>

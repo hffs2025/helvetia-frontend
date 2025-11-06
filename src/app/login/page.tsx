@@ -5,14 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// === Palette aggiornata (dark blue) ===
-const NAVY = '#071C2C';       // blu scuro principale
-const NAVY_DARK = '#020A14';  // blu quasi nero per il fondo
+// === Palette (flat dark blue) ===
+const BACKGROUND = '#071C2C';
 const ACCENT = '#4FD1C5';
-const ANTHRACITE = '#2B2B2B';
-const WHITE = '#FFFFFF';
-const PLACEHOLDER = '#A1A1AA';
-const DISABLED_BG = '#9CA3AF';
 
 export default function Page() {
   const router = useRouter();
@@ -47,16 +42,13 @@ export default function Page() {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center p-4"
-      style={{
-        background: `radial-gradient(1200px 600px at 10% -10%, ${ACCENT}20, transparent),
-                     linear-gradient(180deg, ${NAVY}, ${NAVY_DARK})`,
-      }}
+      className="min-h-screen w-full flex flex-col items-center px-4"
+      style={{ backgroundColor: BACKGROUND }}
     >
-      {/* 🔹 LOGO CENTRALE, distanza minima */}
-      <div className="flex flex-col items-center justify-center mb-1">
+      {/* 🔹 LOGO — 5 px top + 5 px gap col container */}
+      <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
         <Image
-          src="/images/Logo.png"    // assicurati che il file sia in public/images/logo.png
+          src="/images/Logo.png"
           alt="Helvetia Logo"
           width={150}
           height={150}
@@ -69,12 +61,17 @@ export default function Page() {
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="mb-5 text-center">
           <h1 className="text-2xl font-semibold">Log in</h1>
-          <p className="text-slate-300 text-sm mt-1">Welcome back — please log in</p>
+          <p className="text-slate-300 text-sm mt-1">
+            Welcome back — please log in
+          </p>
         </div>
 
         <form className="grid gap-4" onSubmit={onSubmit}>
+          {/* Email */}
           <div className="grid gap-2">
-            <label htmlFor="email" className="text-sm text-slate-200">Email</label>
+            <label htmlFor="email" className="text-sm text-slate-200">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -86,8 +83,11 @@ export default function Page() {
             />
           </div>
 
+          {/* Password */}
           <div className="grid gap-2">
-            <label htmlFor="password" className="text-sm text-slate-200">Password</label>
+            <label htmlFor="password" className="text-sm text-slate-200">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -99,17 +99,19 @@ export default function Page() {
             />
           </div>
 
+          {/* Error */}
           {error && (
             <div className="text-sm rounded-lg p-3 bg-rose-500/10 text-rose-200 border border-rose-500/20">
               {error}
             </div>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
             className="h-11 rounded-xl font-medium disabled:opacity-70 transition-colors"
-            style={{ backgroundColor: ACCENT, color: NAVY_DARK }}
+            style={{ backgroundColor: ACCENT, color: BACKGROUND }}
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
@@ -126,7 +128,7 @@ export default function Page() {
             </a>.
           </p>
 
-          {/* 🔹 Link Sign Up */}
+          {/* Link Sign Up */}
           <p className="text-sm text-slate-300 text-center mt-1">
             If you’re not registered yet, go to{' '}
             <Link
@@ -137,7 +139,7 @@ export default function Page() {
             </Link>.
           </p>
 
-          {/* 🔹 Riga Servizio Clienti */}
+          {/* Servizio clienti */}
           <p className="text-xs text-slate-400 text-center mt-2">
             For any inquiries, please contact our customer service at{' '}
             <a
