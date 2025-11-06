@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const NAVY = '#0A2342';
-const NAVY_DARK = '#06162A';
+// === Palette aggiornata (dark blue) ===
+const NAVY = '#071C2C';       // blu scuro principale
+const NAVY_DARK = '#020A14';  // blu quasi nero per il fondo
 const ACCENT = '#4FD1C5';
+const ANTHRACITE = '#2B2B2B';
+const WHITE = '#FFFFFF';
+const PLACEHOLDER = '#A1A1AA';
+const DISABLED_BG = '#9CA3AF';
 
 export default function Page() {
   const router = useRouter();

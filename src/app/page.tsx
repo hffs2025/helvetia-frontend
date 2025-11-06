@@ -47,6 +47,9 @@ function Header() {
           <a className="hover:text-white" href="#services">Services</a>
           <a className="hover:text-white" href="#features">Capabilities</a>
           <a className="hover:text-white" href="#compliance">Security &amp; Compliance</a>
+          <a className="hover:text-white" href="#features">How to Sign Up</a>
+          <a className="hover:text-white" href="#compliance">Our Dashboard</a>
+        
         </nav>
 
         {/* Buttons (compatti) */}

@@ -8,8 +8,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 
-const NAVY = '#0A2342';
-const NAVY_DARK = '#06162A';
+// === Palette aggiornata (dark blue) ===
+const NAVY = '#071C2C';       // blu scuro principale
+const NAVY_DARK = '#020A14';  // blu quasi nero per il fondo
 const ACCENT = '#4FD1C5';
 const ANTHRACITE = '#2B2B2B';
 const WHITE = '#FFFFFF';
@@ -54,6 +55,7 @@ export default function Page() {
   // Company
   const [companyName, setCompanyName] = useState('');
   const [companyCountry, setCompanyCountry] = useState('');
+  const [regNum, setRegNum] = useState('');               // Registration Number
 
   // Contact + auth
   const [dialCountry, setDialCountry] = useState('');
@@ -78,6 +80,10 @@ export default function Page() {
   const [emailMsg, setEmailMsg] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  const [verifyingReg, setVerifyingReg] = useState(false);
+  const [regMsg, setRegMsg] = useState<string | null>(null);
+  const [regVerified, setRegVerified] = useState(false);
+
   const countries = useMemo(() => {
     const sorted = [...EU].sort((a, b) => a.name.localeCompare(b.name, 'en'));
     return [SWITZERLAND, ...attachDial(sorted)];
@@ -95,6 +101,8 @@ export default function Page() {
   const validate = (): string | null => {
     if (!companyName) return 'Please enter your company name.';
     if (!companyCountry) return 'Please select your company country.';
+    if (!regNum.trim()) return 'Please enter your company registration number.';
+    if (!regVerified) return 'Please verify your registration number.';
     if (!phoneOk) return 'Please enter a contact mobile number and prefix.';
     if (!emailOk) return 'Please enter a valid business email.';
     if (!passwordOk) return 'Password must be at least 8 characters.';
@@ -120,6 +128,12 @@ export default function Page() {
     setEmailVerified(false);
     setEmailMsg(null);
   }, [email]);
+
+  // Reset verifica reg quando cambiano country o reg number
+  useEffect(() => {
+    setRegVerified(false);
+    setRegMsg(null);
+  }, [companyCountry, regNum]);
 
   // Handlers verifica
   const onVerifyMobile = useCallback(async () => {
@@ -180,14 +194,47 @@ export default function Page() {
     }
   }, [email, emailOk, normalizedEmail]);
 
-  // Create account: consentito solo se mobile+email verificate e terms accettati
-  const canSubmit = mobileVerified && emailVerified && accept && !loading;
+  // Verifica Registration Number (obbligatoria)
+  const onVerifyReg = useCallback(async () => {
+    if (!companyCountry || !regNum.trim()) return;
+    setRegMsg(null);
+    setError(null);
+    setVerifyingReg(true);
+    try {
+      const res = await fetch('/api/signup/check-regnum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          country: companyCountry,
+          regnum: regNum.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Verification failed');
+      if (data.valid === true) {
+        setRegVerified(true);
+        setRegMsg('Registration number verified ✅');
+      } else {
+        setRegVerified(false);
+        setError('Invalid or already registered registration number.');
+      }
+    } catch (e: any) {
+      setRegVerified(false);
+      setError(e?.message || 'Verification failed');
+    } finally {
+      setVerifyingReg(false);
+    }
+  }, [companyCountry, regNum]);
+
+  // Create account: richiede anche regVerified
+  const canSubmit = mobileVerified && emailVerified && regVerified && accept && !loading;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setMobileMsg(null);
     setEmailMsg(null);
+    setRegMsg(null);
 
     if (!canSubmit) return;
 
@@ -203,6 +250,7 @@ export default function Page() {
           type: 'business',
           companyName,
           companyCountry,
+          registrationNumber: regNum.trim(), // invio del reg number
           mobileCountry: dialCountry,
           dialCode: DIAL[dialCountry],
           phone,
@@ -261,26 +309,62 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Company country */}
+          {/* Company country + Registration Number (stessa riga, larghezze allineate a Mobile) */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Company country</label>
-            <select
-              value={companyCountry}
-              onChange={e => setCompanyCountry(e.target.value)}
-              className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: companyCountry ? WHITE : PLACEHOLDER }}
-              required
-            >
-              <option value="" disabled>Select company country</option>
-              {countries.map(({ code, name }) => (
-                <option key={code} value={code} style={{ color: ANTHRACITE }}>
-                  {flagEmoji(code)} {` ${code} — ${name}`}
-                </option>
-              ))}
-            </select>
+            <label className="text-sm text-slate-200">Company country & Registration</label>
+            {/* stessa griglia del blocco Mobile: 230px (prefix/country), 1fr (number), 150px (verify) */}
+            <div className="grid gap-3" style={{ gridTemplateColumns: '230px 1fr 150px' }}>
+              {/* Country (230px come il prefix) */}
+              <select
+                value={companyCountry}
+                onChange={e => setCompanyCountry(e.target.value)}
+                className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
+                style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: companyCountry ? WHITE : PLACEHOLDER }}
+                required
+              >
+                <option value="" disabled>Select company country</option>
+                {countries.map(({ code, name }) => (
+                  <option key={code} value={code} style={{ color: ANTHRACITE }}>
+                    {flagEmoji(code)} {` ${code} — ${name}`}
+                  </option>
+                ))}
+              </select>
+
+              {/* Registration Number (1fr come Mobile number) */}
+              <input
+                value={regNum}
+                onChange={e => setRegNum(e.target.value)}
+                placeholder="Registration Number"
+                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                required
+              />
+
+              {/* Verify Reg Num (150px) */}
+              {regVerified ? (
+                <div
+                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                  style={{ width: 150 }}
+                  aria-live="polite"
+                >
+                  Reg no. verified ✅
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onVerifyReg}
+                  disabled={!companyCountry || !regNum.trim() || verifyingReg}
+                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: 150, color: WHITE }}
+                  aria-live="polite"
+                >
+                  {verifyingReg ? 'Checking…' : 'Verify Reg Num'}
+                </button>
+              )}
+            </div>
             <p className="text-xs text-slate-400">
               Includes Switzerland and all European Union member states.
             </p>
+            {regMsg && <p className="text-xs text-emerald-300">{regMsg}</p>}
           </div>
 
           {/* Mobile */}
