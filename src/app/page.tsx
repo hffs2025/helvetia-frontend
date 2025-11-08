@@ -339,166 +339,146 @@ function HowToSignUp() {
           Step 1
         </div>
 
-        {/* Doppia label */}
-        <div className="w-full flex flex-col md:flex-row items-stretch gap-4 mb-6">
-          <div className="w-full md:w-1/2 h-[60px] flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 text-sm leading-snug text-center">
+        {/* LABELS iniziali */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-center leading-snug min-h-[60px] flex items-center justify-center">
             Helvetia Financial Services only onboards Individual User with residence in
             Switzerland or European Union Countries
           </div>
-          <div className="w-full md:w-1/2 h-[60px] flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 text-sm leading-snug text-center">
+          <div className="rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-center leading-snug min-h-[60px] flex items-center justify-center">
             Helvetia Financial Services only onboards Business User with registered office in
             Switzerland or European Union Countries
           </div>
-        </div>
 
-        {/* Testo intermedio */}
-        <div className="text-base md:text-lg font-medium text-white/90 mb-10">
-          Fill up all fields
-        </div>
+          {/* Testo intermedio */}
+          <div className="md:col-span-2 text-base md:text-lg font-medium text-white/90 text-center my-4">
+            Fill up all fields
+          </div>
 
-        {/* Container immagini Step 1 */}
-        <div className="w-full flex flex-col md:flex-row items-start gap-6 mb-12">
-          {/* Individual */}
-          <div className="w-full md:w-1/2 flex justify-center">
-            <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+          {/* STEP 1 immagini */}
+          <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
+            <Image
+              src="/images/Supind.png"
+              alt="Individual account"
+              width={500}
+              height={540}
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
+            <Image
+              src="/images/Supbus.png"
+              alt="Business account"
+              width={500}
+              height={540}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          {/* Colonna sinistra (Step 2, 4) */}
+          <div className="flex flex-col gap-10 text-left">
+            {/* Step 2 label */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
+                Step 2
+              </div>
+              <div className="text-sm md:text-base font-medium text-white/90">
+                Verify your Mobile Number
+              </div>
+            </div>
+            {/* Step 2 container */}
+            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
               <Image
-                src="/images/Supind.png"
-                alt="How to sign up — Individual account"
+                src="/images/VerMobile.png"
+                alt="Verify Mobile Number"
                 width={500}
-                height={300}
-                className="object-contain h-full w-auto"
+                height={540}
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Step 4 label */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
+                Step 4
+              </div>
+              <div className="text-sm md:text-base font-medium text-white/90">
+                Create Account
+              </div>
+            </div>
+            {/* Step 4 container */}
+            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
+              <Image
+                src="/images/CreateAccount.png"
+                alt="Create Account"
+                width={500}
+                height={540}
+                className="object-contain"
                 priority
               />
             </div>
           </div>
 
-          {/* Business */}
-          <div className="w-full md:w-1/2 flex justify-center">
-            <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+          {/* Colonna destra (Step 3, 5) */}
+          <div className="flex flex-col gap-10 text-left">
+            {/* Step 3 label */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
+                Step 3
+              </div>
+              <div className="text-sm md:text-base font-medium text-white/90">
+                Verify your Email Address
+              </div>
+            </div>
+            {/* Step 3 container */}
+            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
               <Image
-                src="/images/Supbus.png"
-                alt="How to sign up — Business account"
+                src="/images/VerEmail.png"
+                alt="Verify Email Address"
                 width={500}
-                height={300}
-                className="object-contain h-full w-auto"
+                height={540}
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Step 5 label */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
+                Step 5
+              </div>
+              <div className="text-sm md:text-base font-medium text-white/90">
+                Summary
+              </div>
+            </div>
+            {/* Step 5 container */}
+            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
+              <Image
+                src="/images/Summary.png"
+                alt="Summary step"
+                width={500}
+                height={540}
+                className="object-contain"
                 priority
               />
             </div>
           </div>
         </div>
 
-        {/* Step 2–5 */}
-        <div className="w-full flex flex-col md:flex-row items-start gap-6 mb-12">
-          {/* Colonna sinistra (Step 2 + Step 4) */}
-          <div className="w-full md:w-1/2 text-left flex flex-col gap-10">
-            {/* Step 2 */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
-                  Step 2
-                </div>
-                <div className="text-sm md:text-base font-medium text-white/90">
-                  Verify your Mobile Number
-                </div>
-              </div>
-
-              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
-                <Image
-                  src="/images/VerifyInd.png"
-                  alt="Verification step — Individual"
-                  width={500}
-                  height={300}
-                  className="object-contain h-full w-auto"
-                  priority
-                />
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
-                  Step 4
-                </div>
-                <div className="text-sm md:text-base font-medium text-white/90">
-                  Create Account
-                </div>
-              </div>
-
-              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
-                <Image
-                  src="/images/CreateAccount.png"
-                  alt="Create account step"
-                  width={500}
-                  height={300}
-                  className="object-contain h-full w-auto"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Colonna destra (Step 3 + Step 5) */}
-          <div className="w-full md:w-1/2 text-left flex flex-col gap-10">
-            {/* Step 3 */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
-                  Step 3
-                </div>
-                <div className="text-sm md:text-base font-medium text-white/90">
-                  Verify your Email Address
-                </div>
-              </div>
-
-              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
-                <Image
-                  src="/images/VerifyBus.png"
-                  alt="Verification step — Business"
-                  width={500}
-                  height={300}
-                  className="object-contain h-full w-auto"
-                  priority
-                />
-              </div>
-            </div>
-
-            {/* Step 5 (Summary) */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
-                  Step 5
-                </div>
-                <div className="text-sm md:text-base font-medium text-white/90">
-                  Summary
-                </div>
-              </div>
-
-              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
-                <Image
-                  src="/images/Summary.png"
-                  alt="Summary step"
-                  width={500}
-                  height={300}
-                  className="object-contain h-full w-auto"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA (pulsanti) */}
-        <div className="w-full flex flex-col md:flex-row items-center md:items-start justify-between gap-4 md:gap-6">
+        {/* CTA */}
+        <div className="mt-12 grid md:grid-cols-2 gap-6">
           <Link
             href="/signup/individual"
-            className="w-full md:w-1/2 px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
+            className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
           >
             Open Individual Account
           </Link>
           <Link
             href="/signup/business"
-            className="w-full md:w-1/2 px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
+            className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
           >
             Open Business Account
           </Link>
@@ -507,6 +487,14 @@ function HowToSignUp() {
     </section>
   );
 }
+
+
+
+
+
+
+
+
 
 
 
