@@ -2,15 +2,15 @@
 // opzione A – pagina totalmente statica
 export const dynamic = 'force-static';
 
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 
 // === Palette (flat dark blue) ===
-const BACKGROUND = '#071C2C';   // sfondo piatto
-const ACCENT = '#4FD1C5';       // primary action
+const BACKGROUND = '#071C2C';
+const ACCENT = '#4FD1C5';
 const ANTHRACITE = '#2B2B2B';
 const WHITE = '#FFFFFF';
 const PLACEHOLDER = '#A1A1AA';
@@ -66,23 +66,14 @@ export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Verifiche
-  const [verifyingMobile, setVerifyingMobile] = useState(false);
-  const [mobileMsg, setMobileMsg] = useState<string | null>(null);
-  const [mobileVerified, setMobileVerified] = useState(false);
-
-  const [verifyingEmail, setVerifyingEmail] = useState(false);
-  const [emailMsg, setEmailMsg] = useState<string | null>(null);
-  const [emailVerified, setEmailVerified] = useState(false);
+  // stati per verifica duplicati (solo avvisi)
+  const [emailTaken, setEmailTaken] = useState(false);
+  const [mobileTaken, setMobileTaken] = useState(false);
 
   const countries = useMemo(() => {
     const sorted = [...EU].sort((a, b) => a.name.localeCompare(b.name, 'en'));
     return [SWITZERLAND, ...attachDial(sorted)];
   }, []);
-
-  useEffect(() => {
-    if (country) setDialCountry(country);
-  }, [country]);
 
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const phoneOk = phone.trim().length >= 5 && !!dialCountry;
@@ -95,96 +86,68 @@ export default function Page() {
     if (password.length < 8) return 'Password must be at least 8 characters.';
     if (password !== confirm) return 'Passwords do not match.';
     if (!accept) return 'You must accept the Terms and Privacy Policy.';
+    if (emailTaken) return 'This email is already registered.';
+    if (mobileTaken) return 'This mobile number is already registered.';
     return null;
   };
 
-  // Helpers
+  const normalizedEmail = useCallback((raw: string) => (raw || '').trim().toLowerCase(), []);
   const toE164 = useCallback((dialCode: string, raw: string) => {
     const digits = (raw || '').replace(/\D/g, '');
     return `+${dialCode}${digits}`;
   }, []);
-  const normalizedEmail = useCallback((raw: string) => (raw || '').trim().toLowerCase(), []);
 
-  // Reset verifiche se utente cambia i valori
+  // —— Verifica EMAIL: chiama /api/signup/check-email se formato valido (debounce)
   useEffect(() => {
-    setMobileVerified(false);
-    setMobileMsg(null);
-  }, [dialCountry, phone]);
-
-  useEffect(() => {
-    setEmailVerified(false);
-    setEmailMsg(null);
-  }, [email]);
-
-  // Handlers verifica
-  const onVerifyMobile = useCallback(async () => {
-    if (!phoneOk) return;
-    setMobileMsg(null);
-    setError(null);
-    setVerifyingMobile(true);
-    try {
-      const mobileE164 = toE164(DIAL[dialCountry], phone);
-      const res = await fetch('/api/signup/check-mobile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileE164 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Verification failed');
-      if (data.available === true) {
-        setMobileVerified(true);
-        setMobileMsg('Mobile verified ✅');
-      } else {
-        setMobileVerified(false);
-        setError('This mobile number is already registered.');
-      }
-    } catch (e: any) {
-      setMobileVerified(false);
-      setError(e?.message || 'Verification failed');
-    } finally {
-      setVerifyingMobile(false);
-    }
-  }, [dialCountry, phone, phoneOk, toE164]);
-
-  const onVerifyEmail = useCallback(async () => {
+    setEmailTaken(false);
     if (!emailOk) return;
-    setEmailMsg(null);
-    setError(null);
-    setVerifyingEmail(true);
-    try {
-      const emailNorm = normalizedEmail(email);
-      const res = await fetch('/api/signup/check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailNorm }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Verification failed');
-      if (data.available === true) {
-        setEmailVerified(true);
-        setEmailMsg('Email verified ✅');
-      } else {
-        setEmailVerified(false);
-        setError('This email is already registered.');
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/signup/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: normalizedEmail(email) }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Verification failed');
+        // se non disponibile => già presente
+        setEmailTaken(data.available === false);
+      } catch {
+        // in caso di errore API, non blocchiamo ma mostriamo un errore generico in alto
+        setError('Unable to verify email right now. Please try again later.');
       }
-    } catch (e: any) {
-      setEmailVerified(false);
-      setError(e?.message || 'Verification failed');
-    } finally {
-      setVerifyingEmail(false);
-    }
+    }, 500);
+    return () => clearTimeout(t);
   }, [email, emailOk, normalizedEmail]);
 
-  // Create account: cliccabile solo se entrambe le verifiche ok + accept
-  const canSubmit = mobileVerified && emailVerified && accept && !loading;
+  // —— Verifica MOBILE: chiama /api/signup/check-mobile se valido (debounce)
+  useEffect(() => {
+    setMobileTaken(false);
+    if (!phoneOk) return;
+    const t = setTimeout(async () => {
+      try {
+        const mobileE164 = toE164(DIAL[dialCountry], phone);
+        const res = await fetch('/api/signup/check-mobile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobileE164 }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Verification failed');
+        setMobileTaken(data.available === false);
+      } catch {
+        setError('Unable to verify mobile right now. Please try again later.');
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [phone, phoneOk, dialCountry, toE164]);
+
+  // Submit abilitato solo se termini accettati, non loading e non duplicati
+  const canSubmit = accept && !loading && !emailTaken && !mobileTaken;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setMobileMsg(null);
-    setEmailMsg(null);
-
-    if (!canSubmit) return; // hard guard
 
     const msg = validate();
     if (msg) return setError(msg);
@@ -218,9 +181,9 @@ export default function Page() {
   return (
     <div
       className="min-h-screen flex flex-col items-center px-4"
-      style={{ backgroundColor: BACKGROUND }}  // flat, no gradient
+      style={{ backgroundColor: BACKGROUND }}
     >
-      {/* Logo — 5px dal top e 5px di gap col container */}
+      {/* Logo */}
       <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
         <Image
           src="/images/Logo.png"
@@ -232,8 +195,8 @@ export default function Page() {
         />
       </div>
 
-      {/* Card */}
-      <div className="w-full max-w-[760px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
+      {/* Card: max 600px */}
+      <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Sign up</h1>
           <p className="text-slate-300 text-sm mt-1">Individual Account</p>
@@ -269,7 +232,10 @@ export default function Page() {
             <label className="text-sm text-slate-200">Country</label>
             <select
               value={country}
-              onChange={e => setCountry(e.target.value)}
+              onChange={e => {
+                setCountry(e.target.value);
+                setDialCountry(e.target.value);
+              }}
               className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: country ? WHITE : PLACEHOLDER }}
               required
@@ -281,15 +247,12 @@ export default function Page() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-slate-400">
-              Includes Switzerland and all European Union member states.
-            </p>
           </div>
 
           {/* Mobile */}
           <div className="grid gap-2">
             <label className="text-sm text-slate-200">Mobile</label>
-            <div className="grid gap-3" style={{ gridTemplateColumns: '230px 1fr 150px' }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: '200px 1fr' }}>
               <select
                 value={dialCountry}
                 onChange={e => setDialCountry(e.target.value)}
@@ -305,43 +268,28 @@ export default function Page() {
                 ))}
               </select>
 
-              <input
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Mobile number"
-                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
-                required
-              />
-
-              {mobileVerified ? (
-                <div
-                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
-                  style={{ width: 150 }}
-                  aria-live="polite"
-                >
-                  Mobile verified ✅
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onVerifyMobile}
-                  disabled={!phoneOk || verifyingMobile}
-                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ width: 150, color: WHITE }}
-                  aria-live="polite"
-                >
-                  {verifyingMobile ? 'Checking…' : 'Verify Mobile'}
-                </button>
-              )}
+              <div className="flex flex-col gap-1">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="Mobile number"
+                  className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                  required
+                />
+                {mobileTaken && (
+                  <p className="text-xs text-rose-300">
+                    This mobile number is already registered.
+                  </p>
+                )}
+              </div>
             </div>
-            {mobileMsg && <p className="text-xs text-emerald-300">{mobileMsg}</p>}
           </div>
 
           {/* Email */}
           <div className="grid gap-2">
             <label className="text-sm text-slate-200">Email</label>
-            <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 150px' }}>
+            <div className="flex flex-col gap-1">
               <input
                 type="email"
                 value={email}
@@ -350,29 +298,12 @@ export default function Page() {
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 required
               />
-
-              {emailVerified ? (
-                <div
-                  className="h-11 flex items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
-                  style={{ width: 150 }}
-                  aria-live="polite"
-                >
-                  Email verified ✅
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onVerifyEmail}
-                  disabled={!emailOk || verifyingEmail}
-                  className="h-11 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ width: 150, color: WHITE }}
-                  aria-live="polite"
-                >
-                  {verifyingEmail ? 'Checking…' : 'Verify Email'}
-                </button>
+              {emailTaken && (
+                <p className="text-xs text-rose-300">
+                  This email is already registered.
+                </p>
               )}
             </div>
-            {emailMsg && <p className="text-xs text-emerald-300">{emailMsg}</p>}
           </div>
 
           {/* Password + Confirm */}
@@ -445,7 +376,7 @@ export default function Page() {
               className="h-11 w-[300px] rounded-xl font-medium transition-colors"
               style={{ backgroundColor: canSubmit ? ACCENT : DISABLED_BG, color: BACKGROUND }}
             >
-              {loading ? 'Creating account…' : 'Create account'}
+              {loading ? 'Creating account…' : 'Continue'}
             </button>
           </div>
 
