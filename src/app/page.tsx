@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+/* ====================== Feature flags ====================== */
+const SHOW_DASHBOARD = false; // lascia la funzione intatta ma non la renderizza
+
 /* ====================== Palette (flat dark blue) ====================== */
 const BACKGROUND = '#071C2C';   // dark blue piatto per lo sfondo
 const ACCENT = '#4FD1C5';
@@ -61,9 +64,14 @@ function Header() {
           >
             How to Sign Up
           </button>
+
+          {/* Our Dashboard (invisibile ma non cancellato) */}
           <button
             onClick={() => handleScroll('our-dashboard')}
-            className="hover:text-white cursor-pointer bg-transparent border-none outline-none text-gray-200 text-sm"
+            className="bg-transparent border-none outline-none text-gray-200 text-sm"
+            hidden // lo rende invisibile e non accessibile alla tastiera
+            aria-hidden="true"
+            tabIndex={-1}
           >
             Our Dashboard
           </button>
@@ -206,8 +214,6 @@ function TrustBar() {
   );
 }
 
-
-
 function Services() {
   return (
     <section id="services" className="w-full text-white" style={{ backgroundColor: BACKGROUND }}>
@@ -315,7 +321,6 @@ function InfoCard({ icon, title, desc }: { icon: React.ReactNode; title: string;
 }
 
 /* ====================== Nuovi moduli alternati ====================== */
-// page.tsx
 function HowToSignUp() {
   return (
     <section
@@ -325,119 +330,196 @@ function HowToSignUp() {
     >
       <div className="max-w-6xl mx-auto px-4 py-16 text-center">
         {/* Titolo */}
-        <h2 className="text-2xl md:text-3xl font-semibold mb-6">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-8">
           How to Sign Up
         </h2>
 
-        {/* Label orizzontale a tutta larghezza */}
-        <div className="w-full h-[45px] flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 text-base md:text-lg mb-10 px-4 leading-snug text-center">
-          Helvetia Financial Services only onboards indivudal / companies with registered
-          address in Switzerland or European Union countries.
+        {/* Step 1 */}
+        <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white mb-8">
+          Step 1
         </div>
 
-        {/* Contenitore principale verticale */}
-        <div className="flex flex-col gap-20">
-          {/* === INDIVIDUAL ACCOUNT === */}
-          <div className="w-full flex flex-col gap-4">
-            {/* Riga superiore: immagine + testo */}
-            <div className="flex flex-col md:flex-row items-start gap-6">
-              {/* Sinistra: immagine */}
-              <div className="w-full md:w-1/2 flex justify-center">
-                <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
-                  <Image
-                    src="/images/Supind.png"
-                    alt="How to sign up — Individual account"
-                    width={500}
-                    height={300}
-                    className="object-contain h-full w-auto"
-                    priority
-                  />
+        {/* Doppia label */}
+        <div className="w-full flex flex-col md:flex-row items-stretch gap-4 mb-6">
+          <div className="w-full md:w-1/2 h-[60px] flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 text-sm leading-snug text-center">
+            Helvetia Financial Services only onboards Individual User with residence in
+            Switzerland or European Union Countries
+          </div>
+          <div className="w-full md:w-1/2 h-[60px] flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-4 text-sm leading-snug text-center">
+            Helvetia Financial Services only onboards Business User with registered office in
+            Switzerland or European Union Countries
+          </div>
+        </div>
+
+        {/* Testo intermedio */}
+        <div className="text-base md:text-lg font-medium text-white/90 mb-10">
+          Fill up all fields
+        </div>
+
+        {/* Container immagini Step 1 */}
+        <div className="w-full flex flex-col md:flex-row items-start gap-6 mb-12">
+          {/* Individual */}
+          <div className="w-full md:w-1/2 flex justify-center">
+            <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+              <Image
+                src="/images/Supind.png"
+                alt="How to sign up — Individual account"
+                width={500}
+                height={300}
+                className="object-contain h-full w-auto"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Business */}
+          <div className="w-full md:w-1/2 flex justify-center">
+            <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
+              <Image
+                src="/images/Supbus.png"
+                alt="How to sign up — Business account"
+                width={500}
+                height={300}
+                className="object-contain h-full w-auto"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Step 2–5 */}
+        <div className="w-full flex flex-col md:flex-row items-start gap-6 mb-12">
+          {/* Colonna sinistra (Step 2 + Step 4) */}
+          <div className="w-full md:w-1/2 text-left flex flex-col gap-10">
+            {/* Step 2 */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
+                  Step 2
+                </div>
+                <div className="text-sm md:text-base font-medium text-white/90">
+                  Verify your Mobile Number
                 </div>
               </div>
 
-              {/* Destra: testo multilinea */}
-              <div className="w-full md:w-1/2 text-left bg-white/5 p-5 rounded-2xl border border-white/10 h-[300px] flex flex-col justify-center">
-                <h3 className="text-lg font-medium mb-2">Individual Account</h3>
-                <p className="text-sm leading-relaxed opacity-90 whitespace-pre-line overflow-hidden text-ellipsis">
-                  {`Fill out all fields in the form.
-By clicking "Verify Mobile" and "Verify Email" you verify that datas you entered are not already in use with us.
-After these checks, once you have checked "I accept the Terms and Privacy Policy," the "Create Account" button will be activated, and you can register your company.
-At this point, using the email address and password you entered, you can go to the login page where you can perform the document verification (KYC) through our partner SumSub, which is integrated into our systems.
-After successful document verification, your account will be activated.`}
-                </p>
+              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
+                <Image
+                  src="/images/VerifyInd.png"
+                  alt="Verification step — Individual"
+                  width={500}
+                  height={300}
+                  className="object-contain h-full w-auto"
+                  priority
+                />
               </div>
             </div>
 
-            {/* Riga inferiore: pulsante + label */}
-            <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 md:gap-6">
-              {/* Pulsante sotto container sinistro */}
-              <Link
-                href="/signup/individual"
-                className="w-full md:w-[48%] px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
-              >
-                Open Individual Account
-              </Link>
+            {/* Step 4 */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
+                  Step 4
+                </div>
+                <div className="text-sm md:text-base font-medium text-white/90">
+                  Create Account
+                </div>
+              </div>
 
-              {/* Label sotto container destro */}
-              <div className="w-full md:w-[48%] px-5 py-3 rounded-2xl border border-white/20 bg-white/5 text-sm text-center flex items-center justify-center">
-                Usually onboarding process takes 2 hours !
+              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
+                <Image
+                  src="/images/CreateAccount.png"
+                  alt="Create account step"
+                  width={500}
+                  height={300}
+                  className="object-contain h-full w-auto"
+                  priority
+                />
               </div>
             </div>
           </div>
 
-          {/* === BUSINESS ACCOUNT === */}
-          <div className="w-full flex flex-col gap-4">
-            {/* Riga superiore: immagine + testo */}
-            <div className="flex flex-col md:flex-row items-start gap-6">
-              {/* Sinistra: immagine */}
-              <div className="w-full md:w-1/2 flex justify-center">
-                <div className="w-full h-[300px] rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
-                  <Image
-                    src="/images/Supbus.png"
-                    alt="How to sign up — Business account"
-                    width={500}
-                    height={300}
-                    className="object-contain h-full w-auto"
-                    priority
-                  />
+          {/* Colonna destra (Step 3 + Step 5) */}
+          <div className="w-full md:w-1/2 text-left flex flex-col gap-10">
+            {/* Step 3 */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
+                  Step 3
+                </div>
+                <div className="text-sm md:text-base font-medium text-white/90">
+                  Verify your Email Address
                 </div>
               </div>
 
-              {/* Destra: testo multilinea */}
-              <div className="w-full md:w-1/2 text-left bg-white/5 p-5 rounded-2xl border border-white/10 h-[300px] flex flex-col justify-center">
-                <h3 className="text-lg font-medium mb-2">Business Account</h3>
-                <p className="text-sm leading-relaxed opacity-90 whitespace-pre-line overflow-hidden text-ellipsis">
-                  {`Fill out all fields in the form.
-By clicking "Verify Reg Num", "Verify Mobile" and "Verify Email," you verify that datas you entered are not already in use with us.
-After these checks, once you have checked "I accept the Terms and Privacy Policy," the "Create Account" button will be activated, and you can register your company.
-At this point, using the email address and password you entered, you can go to the login page where you can perform the document verification (KYB) through our partner SumSub, which is integrated into our systems.
-After successful document verification, your account will be activated.`}
-                </p>
+              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
+                <Image
+                  src="/images/VerifyBus.png"
+                  alt="Verification step — Business"
+                  width={500}
+                  height={300}
+                  className="object-contain h-full w-auto"
+                  priority
+                />
               </div>
             </div>
 
-            {/* Riga inferiore: pulsante + label */}
-            <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 md:gap-6">
-              {/* Pulsante sotto container sinistro */}
-              <Link
-                href="/signup/business"
-                className="w-full md:w-[48%] px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
-              >
-                Open Business Account
-              </Link>
+            {/* Step 5 (Summary) */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white">
+                  Step 5
+                </div>
+                <div className="text-sm md:text-base font-medium text-white/90">
+                  Summary
+                </div>
+              </div>
 
-              {/* Label sotto container destro */}
-              <div className="w-full md:w-[48%] px-5 py-3 rounded-2xl border border-white/20 bg-white/5 text-sm text-center flex items-center justify-center">
-                Usually onboarding process takes 1 working day !
+              <div className="w-full h-[300px] rounded-2xl border border-white/15 bg-white/5 overflow-hidden flex items-center justify-center p-4">
+                <Image
+                  src="/images/Summary.png"
+                  alt="Summary step"
+                  width={500}
+                  height={300}
+                  className="object-contain h-full w-auto"
+                  priority
+                />
               </div>
             </div>
           </div>
+        </div>
+
+        {/* CTA (pulsanti) */}
+        <div className="w-full flex flex-col md:flex-row items-center md:items-start justify-between gap-4 md:gap-6">
+          <Link
+            href="/signup/individual"
+            className="w-full md:w-1/2 px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
+          >
+            Open Individual Account
+          </Link>
+          <Link
+            href="/signup/business"
+            className="w-full md:w-1/2 px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
+          >
+            Open Business Account
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
+
+
+
+
+
+
+
+
+
+
+
+/* ====== OurDashboard TENUTA MA NON RENDERIZZATA (invisibile) ====== */
 function OurDashboard() {
   return (
     <section
@@ -584,7 +666,10 @@ function HomePageInner() {
       <Compliance />
       {/* Nuovi moduli a colori alternati */}
       <HowToSignUp />
-      <OurDashboard />
+
+      {/* OurDashboard non renderizzato quando SHOW_DASHBOARD === false */}
+      {SHOW_DASHBOARD && <OurDashboard />}
+
       <Footer />
     </div>
   );
