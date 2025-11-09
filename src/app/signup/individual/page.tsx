@@ -1,22 +1,21 @@
-﻿'use client';
-// opzione A – pagina totalmente statica
-export const dynamic = 'force-static';
+﻿'use client'
+export const dynamic = 'force-static'
 
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Eye, EyeOff } from 'lucide-react'
 
 // === Palette (flat dark blue) ===
-const BACKGROUND = '#071C2C';
-const ACCENT = '#4FD1C5';
-const ANTHRACITE = '#2B2B2B';
-const WHITE = '#FFFFFF';
-const PLACEHOLDER = '#A1A1AA';
-const DISABLED_BG = '#9CA3AF';
+const BACKGROUND = '#071C2C'
+const ACCENT = '#4FD1C5'
+const ANTHRACITE = '#2B2B2B'
+const WHITE = '#FFFFFF'
+const PLACEHOLDER = '#A1A1AA'
+const DISABLED_BG = '#9CA3AF'
 
-type Country = { code: string; name: string; dial: string };
+type Country = { code: string; name: string; dial: string }
 
 // --- EU + Switzerland ---
 const EU: Omit<Country, 'dial'>[] = [
@@ -34,180 +33,160 @@ const EU: Omit<Country, 'dial'>[] = [
   { code: 'RO', name: 'Romania' }, { code: 'SK', name: 'Slovakia' },
   { code: 'SI', name: 'Slovenia' }, { code: 'ES', name: 'Spain' },
   { code: 'SE', name: 'Sweden' },
-];
+]
 const DIAL: Record<string, string> = {
   CH: '41', AT: '43', BE: '32', BG: '359', HR: '385', CY: '357', CZ: '420',
   DK: '45', EE: '372', FI: '358', FR: '33', DE: '49', GR: '30', HU: '36',
   IE: '353', IT: '39', LV: '371', LT: '370', LU: '352', MT: '356',
   NL: '31', PL: '48', PT: '351', RO: '40', SK: '421', SI: '386',
   ES: '34', SE: '46',
-};
-const SWITZERLAND: Country = { code: 'CH', name: 'Switzerland', dial: DIAL['CH'] };
+}
+const SWITZERLAND: Country = { code: 'CH', name: 'Switzerland', dial: DIAL['CH'] }
 const attachDial = (list: Omit<Country, 'dial'>[]): Country[] =>
-  list.map(c => ({ ...c, dial: DIAL[c.code] || '' }));
+  list.map(c => ({ ...c, dial: DIAL[c.code] || '' }))
 const flagEmoji = (code: string) =>
-  code.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
+  code.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)))
 
 export default function Page() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [country, setCountry] = useState('');
-  const [dialCountry, setDialCountry] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [accept, setAccept] = useState(false);
+  // form state
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [country, setCountry] = useState('')
+  const [dialCountry, setDialCountry] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [accept, setAccept] = useState(false)
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  // ui state
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
-  // stati per verifica duplicati (solo avvisi)
-  const [emailTaken, setEmailTaken] = useState(false);
-  const [mobileTaken, setMobileTaken] = useState(false);
+  // flags da mostrare SOLO dopo submit
+  const [emailTaken, setEmailTaken] = useState(false)
+  const [mobileTaken, setMobileTaken] = useState(false)
 
   const countries = useMemo(() => {
-    const sorted = [...EU].sort((a, b) => a.name.localeCompare(b.name, 'en'));
-    return [SWITZERLAND, ...attachDial(sorted)];
-  }, []);
+    const sorted = [...EU].sort((a, b) => a.name.localeCompare(b.name, 'en'))
+    return [SWITZERLAND, ...attachDial(sorted)]
+  }, [])
 
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const phoneOk = phone.trim().length >= 5 && !!dialCountry;
+  // validazioni base per l’abilitazione del bottone
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const phoneOk = phone.trim().length >= 5 && !!dialCountry
 
-  const validate = (): string | null => {
-    if (!firstName || !lastName) return 'Please enter your name.';
-    if (!country) return 'Please select your country.';
-    if (!phoneOk) return 'Please enter your mobile number and prefix.';
-    if (!emailOk) return 'Please enter a valid email.';
-    if (password.length < 8) return 'Password must be at least 8 characters.';
-    if (password !== confirm) return 'Passwords do not match.';
-    if (!accept) return 'You must accept the Terms and Privacy Policy.';
-    if (emailTaken) return 'This email is already registered.';
-    if (mobileTaken) return 'This mobile number is already registered.';
-    return null;
-  };
+  const normalizedEmail = (raw: string) => (raw || '').trim().toLowerCase()
+  const toE164 = (dialCode: string, raw: string) => {
+    const digits = (raw || '').replace(/\D/g, '')
+    return `+${dialCode}${digits}`
+  }
 
-  const normalizedEmail = useCallback((raw: string) => (raw || '').trim().toLowerCase(), []);
-  const toE164 = useCallback((dialCode: string, raw: string) => {
-    const digits = (raw || '').replace(/\D/g, '');
-    return `+${dialCode}${digits}`;
-  }, []);
+  const validateBasic = (): string | null => {
+    if (!firstName || !lastName) return 'Please enter your name.'
+    if (!country) return 'Please select your country.'
+    if (!phoneOk) return 'Please enter your mobile number and prefix.'
+    if (!emailOk) return 'Please enter a valid email.'
+    if (password.length < 8) return 'Password must be at least 8 characters.'
+    if (password !== confirm) return 'Passwords do not match.'
+    if (!accept) return 'You must accept the Terms and Privacy Policy.'
+    return null
+  }
 
-  // —— Verifica EMAIL: chiama /api/signup/check-email se formato valido (debounce)
-  useEffect(() => {
-    setEmailTaken(false);
-    if (!emailOk) return;
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/signup/check-email', {
+  const isComplete =
+    firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    !!country &&
+    phoneOk &&
+    emailOk &&
+    password.length >= 8 &&
+    password === confirm &&
+    accept
+
+  const canSubmit = isComplete && !loading
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setEmailTaken(false)
+    setMobileTaken(false)
+
+    const msg = validateBasic()
+    if (msg) return setError(msg)
+
+    try {
+      setLoading(true)
+
+      // chiamate API SOLO al click
+      const [emailRes, mobileRes] = await Promise.all([
+        fetch('/api/signup/check-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: normalizedEmail(email) }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || 'Verification failed');
-        // se non disponibile => già presente
-        setEmailTaken(data.available === false);
-      } catch {
-        // in caso di errore API, non blocchiamo ma mostriamo un errore generico in alto
-        setError('Unable to verify email right now. Please try again later.');
-      }
-    }, 500);
-    return () => clearTimeout(t);
-  }, [email, emailOk, normalizedEmail]);
-
-  // —— Verifica MOBILE: chiama /api/signup/check-mobile se valido (debounce)
-  useEffect(() => {
-    setMobileTaken(false);
-    if (!phoneOk) return;
-    const t = setTimeout(async () => {
-      try {
-        const mobileE164 = toE164(DIAL[dialCountry], phone);
-        const res = await fetch('/api/signup/check-mobile', {
+        }),
+        fetch('/api/signup/check-mobile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mobileE164 }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || 'Verification failed');
-        setMobileTaken(data.available === false);
-      } catch {
-        setError('Unable to verify mobile right now. Please try again later.');
-      }
-    }, 500);
-    return () => clearTimeout(t);
-  }, [phone, phoneOk, dialCountry, toE164]);
-
-  // Submit abilitato solo se termini accettati, non loading e non duplicati
-  const canSubmit = accept && !loading && !emailTaken && !mobileTaken;
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    const msg = validate();
-    if (msg) return setError(msg);
-
-    try {
-      setLoading(true);
-      const res = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          country,
-          mobileCountry: dialCountry,
-          dialCode: DIAL[dialCountry],
-          phone,
-          email: normalizedEmail(email),
-          password,
-          type: 'individual',
+          body: JSON.stringify({ mobileE164: toE164(DIAL[dialCountry], phone) }),
         }),
-      });
-      if (!res.ok) throw new Error('Signup failed');
-      router.push('/login');
+      ])
+
+      const [emailData, mobileData] = await Promise.all([emailRes.json(), mobileRes.json()])
+
+      if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
+      if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
+
+      const emailUnavailable = emailData.available === false
+      const mobileUnavailable = mobileData.available === false
+      setEmailTaken(emailUnavailable)
+      setMobileTaken(mobileUnavailable)
+
+      if (emailUnavailable || mobileUnavailable) {
+        const problems = [
+          emailUnavailable ? 'This email is already registered.' : null,
+          mobileUnavailable ? 'This mobile number is already registered.' : null,
+        ].filter(Boolean)
+        setError(problems.join(' '))
+        return
+      }
+
+      // (opzionale) crea utente qui prima dell’OTP
+      // const res = await fetch('/api/signup', { ... })
+      // if (!res.ok) throw new Error('Signup failed')
+
+      router.push('/otp-mobile')
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Something went wrong. Please try again later.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center px-4"
-      style={{ backgroundColor: BACKGROUND }}
-    >
+    <div className="min-h-screen flex flex-col items-center px-4" style={{ backgroundColor: BACKGROUND }}>
       {/* Logo */}
       <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
-        <Image
-          src="/images/Logo.png"
-          alt="Helvetia Logo"
-          width={150}
-          height={150}
-          priority
-          className="object-contain"
-        />
+        <Image src="/images/Logo.png" alt="Helvetia Logo" width={150} height={150} priority className="object-contain" />
       </div>
 
-      {/* Card: max 600px */}
+      {/* Card */}
       <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Sign up</h1>
           <p className="text-slate-300 text-sm mt-1">Individual Account</p>
         </div>
 
-        <form className="grid gap-4" onSubmit={onSubmit}>
+        <form className="grid gap-4" onSubmit={onSubmit} noValidate>
           {/* Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-200">First name</label>
+              <label className="text-sm text-slate-200" htmlFor="firstName">First name</label>
               <input
+                id="firstName"
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 placeholder="John"
                 value={firstName}
@@ -216,8 +195,9 @@ export default function Page() {
               />
             </div>
             <div className="grid gap-2">
-              <label className="text-sm text-slate-200">Last name</label>
+              <label className="text-sm text-slate-200" htmlFor="lastName">Last name</label>
               <input
+                id="lastName"
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 placeholder="Doe"
                 value={lastName}
@@ -229,13 +209,11 @@ export default function Page() {
 
           {/* Country */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Country</label>
+            <label className="text-sm text-slate-200" htmlFor="country">Country</label>
             <select
+              id="country"
               value={country}
-              onChange={e => {
-                setCountry(e.target.value);
-                setDialCountry(e.target.value);
-              }}
+              onChange={e => { setCountry(e.target.value); setDialCountry(e.target.value) }}
               className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: country ? WHITE : PLACEHOLDER }}
               required
@@ -249,11 +227,15 @@ export default function Page() {
             </select>
           </div>
 
-          {/* Mobile */}
+          {/* Mobile (prefix same width as First name, number same as Last name) */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Mobile</label>
-            <div className="grid gap-3" style={{ gridTemplateColumns: '200px 1fr' }}>
+            <label className="text-sm text-slate-200" htmlFor="mobile">Mobile</label>
+
+            {/* same grid as Name/Surname: 1 col on mobile, 2 cols from sm */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Prefix dropdown = left column (same width of First name) */}
               <select
+                aria-label="Country dial code"
                 value={dialCountry}
                 onChange={e => setDialCountry(e.target.value)}
                 className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
@@ -268,50 +250,48 @@ export default function Page() {
                 ))}
               </select>
 
+              {/* Number textbox = right column (same width of Last name) */}
               <div className="flex flex-col gap-1">
                 <input
+                  id="mobile"
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="Mobile number"
-                  className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                  className="h-11 w-full rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                  aria-invalid={mobileTaken ? 'true' : 'false'}
                   required
                 />
-                {mobileTaken && (
-                  <p className="text-xs text-rose-300">
-                    This mobile number is already registered.
-                  </p>
-                )}
+                {mobileTaken && <p className="text-xs text-rose-300">This mobile number is already registered.</p>}
               </div>
             </div>
           </div>
 
           {/* Email */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Email</label>
+            <label className="text-sm text-slate-200" htmlFor="email">Email</label>
             <div className="flex flex-col gap-1">
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                aria-invalid={emailTaken ? 'true' : 'false'}
                 required
               />
-              {emailTaken && (
-                <p className="text-xs text-rose-300">
-                  This email is already registered.
-                </p>
-              )}
+              {emailTaken && <p className="text-xs text-rose-300">This email is already registered.</p>}
             </div>
           </div>
 
           {/* Password + Confirm */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Password</label>
-            <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <label className="text-sm text-slate-200" htmlFor="password">Password</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -321,8 +301,9 @@ export default function Page() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(s => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -330,6 +311,7 @@ export default function Page() {
 
               <div className="relative">
                 <input
+                  id="confirm"
                   type={showConfirm ? 'text' : 'password'}
                   value={confirm}
                   onChange={e => setConfirm(e.target.value)}
@@ -339,13 +321,15 @@ export default function Page() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
+                  onClick={() => setShowConfirm(s => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white"
+                  aria-label={showConfirm ? 'Hide password confirmation' : 'Show password confirmation'}
                 >
                   {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
+            <p className="text-[11px] text-slate-400">Minimum 8 characters. Use a strong password.</p>
           </div>
 
           {/* Terms */}
@@ -373,10 +357,11 @@ export default function Page() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="h-11 w-[300px] rounded-xl font-medium transition-colors"
+              className="h-11 w-[300px] rounded-xl font-medium transition-colors disabled:cursor-not-allowed"
               style={{ backgroundColor: canSubmit ? ACCENT : DISABLED_BG, color: BACKGROUND }}
+              aria-disabled={!canSubmit}
             >
-              {loading ? 'Creating account…' : 'Continue'}
+              {loading ? 'Creating account…' : 'Continue !'}
             </button>
           </div>
 
@@ -392,5 +377,5 @@ export default function Page() {
         </form>
       </div>
     </div>
-  );
+  )
 }
