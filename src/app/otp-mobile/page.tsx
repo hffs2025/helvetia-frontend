@@ -14,8 +14,7 @@ const DISABLED_BG = '#9CA3AF';
 const EXPIRE_SECONDS = 900; // 15 minuti
 
 // === Utils ===
-const maskMobile = (m?: string) =>
-  (m ? m.replace(/^(\+\d{2,3})\d+(\d{2})$/, '$1••••••••$2') : '');
+const safeDecode = (v?: string | null) => (v ? decodeURIComponent(v) : '');
 const getCookie = (name: string) => {
   if (typeof document === 'undefined') return '';
   const match = document.cookie.split('; ').find(r => r.startsWith(name + '='));
@@ -25,19 +24,16 @@ const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
 const isValidMobile = (v: string) => /^(\+)?\d{6,15}$/.test(v.trim());
 const validateCode = (v: string) => /^\d{6}$/.test(v.trim());
 
-export default function Page() {
+export default function OtpMobileClient() {
   const router = useRouter();
   const search = useSearchParams();
 
   const registrationId = useMemo(
-    () =>
-      decodeURIComponent(search.get('rid') || '') ||
-      decodeURIComponent(getCookie('regId') || ''),
+    () => safeDecode(search.get('rid')) || safeDecode(getCookie('regId')),
     [search]
   );
-
   const initialMobileFromQuery = useMemo(
-    () => decodeURIComponent(search.get('mobile') || ''),
+    () => safeDecode(search.get('mobile')),
     [search]
   );
 
@@ -51,11 +47,11 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  const [nextTimer, setNextTimer] = useState(0); // countdown per “Next code in mm:ss”
+  const [nextTimer, setNextTimer] = useState(0); // countdown “Next code in mm:ss”
   const [ttl, setTtl] = useState(EXPIRE_SECONDS);
   const isExpired = ttl <= 0;
 
-  // countdown OTP validity (15 min)
+  // OTP validity countdown
   useEffect(() => {
     if (!isExpired) {
       const t = setInterval(() => setTtl(s => (s > 0 ? s - 1 : 0)), 1000);
@@ -63,7 +59,7 @@ export default function Page() {
     }
   }, [isExpired]);
 
-  // countdown per “Next code in mm:ss”
+  // “Next code in mm:ss” countdown
   useEffect(() => {
     if (nextTimer > 0) {
       const t = setInterval(() => setNextTimer(s => (s > 0 ? s - 1 : 0)), 1000);
@@ -201,7 +197,6 @@ export default function Page() {
 
       {/* Card */}
       <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
-        {/* Title */}
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Verify your mobile</h1>
         </div>
@@ -228,7 +223,7 @@ export default function Page() {
                   type="button"
                   onClick={() => { setIsEditing(true); setError(null); setInfo(null); }}
                   className="h-11 rounded-xl font-medium"
-                  style={{ backgroundColor: ACCENT, color: BACKGROUND, width: '100px' }}
+                  style={{ backgroundColor: ACCENT, color: '#071C2C', width: '100px' }}
                 >
                   Edit
                 </button>
@@ -240,7 +235,7 @@ export default function Page() {
                   className="h-11 rounded-xl font-medium"
                   style={{
                     backgroundColor: (!mobileDirty || !isValidMobile(mobile)) ? DISABLED_BG : ACCENT,
-                    color: BACKGROUND,
+                    color: '#071C2C',
                     width: '100px',
                   }}
                 >
@@ -258,7 +253,7 @@ export default function Page() {
             <label className="text-sm text-slate-200">Verification code (6 digits)</label>
             <input
               inputMode="numeric"
-              pattern="\d*"
+              pattern="\\d*"
               autoComplete="one-time-code"
               value={code}
               onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -281,7 +276,7 @@ export default function Page() {
                   sending || nextTimer > 0 || isEditing || mobileDirty
                     ? DISABLED_BG
                     : ACCENT,
-                color: BACKGROUND,
+                color: '#071C2C',
               }}
             >
               {sending ? 'Sending…' : nextLabel}
@@ -298,7 +293,7 @@ export default function Page() {
                   loading || !validateCode(code) || isExpired || isEditing || mobileDirty
                     ? DISABLED_BG
                     : ACCENT,
-                color: BACKGROUND,
+                color: '#071C2C',
               }}
             >
               {loading ? 'Verifying…' : 'Validate !'}
