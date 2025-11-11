@@ -121,46 +121,64 @@ export default function Page() {
     try {
       setLoading(true)
 
-      // chiamate API SOLO al click
-      const [emailRes, mobileRes] = await Promise.all([
-        fetch('/api/signup/check-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: normalizedEmail(email) }),
-        }),
-        fetch('/api/signup/check-mobile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mobileE164: toE164(DIAL[dialCountry], phone) }),
-        }),
-      ])
+      // 1) check email availability
+      const emailRes = await fetch('/api/signup/check-email/routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail(email) }),
+      })
+      const emailData = await emailRes.json()
 
-      const [emailData, mobileData] = await Promise.all([emailRes.json(), mobileRes.json()])
+      // 2) check mobile availability
+      const e164 = toE164(DIAL[dialCountry], phone)
+      const mobileRes = await fetch('/api/signup/check-mobile/routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile: e164 }),
+      })
+      const mobileData = await mobileRes.json()
 
       if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
       if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
 
-      const emailUnavailable = emailData.available === false
-      const mobileUnavailable = mobileData.available === false
-      setEmailTaken(emailUnavailable)
-      setMobileTaken(mobileUnavailable)
+      const emailAvailable = !!emailData?.available
+      const mobileAvailable = !!mobileData?.available
 
-      if (emailUnavailable || mobileUnavailable) {
+      setEmailTaken(!emailAvailable)
+      setMobileTaken(!mobileAvailable)
+
+      if (!emailAvailable || !mobileAvailable) {
         const problems = [
-          emailUnavailable ? 'This email is already registered.' : null,
-          mobileUnavailable ? 'This mobile number is already registered.' : null,
+          !emailAvailable ? 'This email is already registered with us.' : null,
+          !mobileAvailable ? 'This mobile number is already registered with us.' : null,
         ].filter(Boolean)
         setError(problems.join(' '))
         return
       }
 
-      // (opzionale) crea utente qui prima dell’OTP
-      // const res = await fetch('/api/signup', { ... })
-      // if (!res.ok) throw new Error('Signup failed')
+      // 3) entrambi disponibili → inserisci in UsrTemp
+      const insertRes = await fetch('/api/signup/usrtemp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: normalizedEmail(email),
+          mobile: e164,
+          country,
+        }),
+      })
 
-      router.push('/otp-mobile')
+      if (!insertRes.ok) {
+        const t = await insertRes.text().catch(() => '')
+        throw new Error(t || 'Failed to save temporary user.')
+      }
+
+      // redirect step successivo, passando il mobile E164
+      const target = `/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`
+      router.push(target)
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again later.')
+      setError(err?.message || 'Something went wrong. Please try again later.')
     } finally {
       setLoading(false)
     }
@@ -227,13 +245,10 @@ export default function Page() {
             </select>
           </div>
 
-          {/* Mobile (prefix same width as First name, number same as Last name) */}
+          {/* Mobile */}
           <div className="grid gap-2">
             <label className="text-sm text-slate-200" htmlFor="mobile">Mobile</label>
-
-            {/* same grid as Name/Surname: 1 col on mobile, 2 cols from sm */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Prefix dropdown = left column (same width of First name) */}
               <select
                 aria-label="Country dial code"
                 value={dialCountry}
@@ -250,7 +265,6 @@ export default function Page() {
                 ))}
               </select>
 
-              {/* Number textbox = right column (same width of Last name) */}
               <div className="flex flex-col gap-1">
                 <input
                   id="mobile"
