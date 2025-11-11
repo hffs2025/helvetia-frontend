@@ -206,7 +206,7 @@ export default function Page() {
       <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Sign up</h1>
-          <p className="text-slate-300 text-sm mt-1">Individual Account</p>
+          <p className="text-slate-300 text-sm mt-1">Personal Account</p>
         </div>
 
         <form className="grid gap-4" onSubmit={onSubmit} noValidate>
