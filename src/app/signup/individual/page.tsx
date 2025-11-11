@@ -109,21 +109,6 @@ export default function Page() {
 
   const canSubmit = isComplete && !loading
 
-  // Helper: parse JSON safe (gestisce HTML/empty body)
-  async function parseJsonSafe(res: Response) {
-    const ct = res.headers.get('content-type') || ''
-    const raw = await res.text()
-    let data: any = null
-    if (ct.includes('application/json') && raw) {
-      try { data = JSON.parse(raw) } catch { /* ignore */ }
-    }
-    if (!res.ok) {
-      const msg = (data && (data.error || data.message)) || raw || 'Request failed'
-      throw new Error(msg)
-    }
-    return data || {}
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -138,21 +123,24 @@ export default function Page() {
 
       const e164 = toE164(DIAL[dialCountry], phone)
 
-      // 1) check email availability
-      const emailRes = await fetch('/api/signup/check-email/routes', {
+      // 1) check email availability  (FIX: path senza /routes)
+      const emailRes = await fetch('/api/signup/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail(email) }),
       })
-      const emailData = await parseJsonSafe(emailRes)
+      const emailData = await emailRes.json()
 
-      // 2) check mobile availability
-      const mobileRes = await fetch('/api/signup/check-mobile/routes', {
+      // 2) check mobile availability (FIX: path senza /routes)
+      const mobileRes = await fetch('/api/signup/check-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: e164 }),
       })
-      const mobileData = await parseJsonSafe(mobileRes)
+      const mobileData = await mobileRes.json()
+
+      if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
+      if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
 
       const emailAvailable = !!emailData?.available
       const mobileAvailable = !!mobileData?.available
@@ -181,15 +169,16 @@ export default function Page() {
           country,
         }),
       })
-      await parseJsonSafe(insertRes) // solleva se errore non-JSON/HTML
+
+      if (!insertRes.ok) {
+        const t = await insertRes.text().catch(() => '')
+        throw new Error(t || 'Failed to save temporary user.')
+      }
 
       // redirect step successivo con il mobile E.164
       router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
     } catch (err: any) {
-      // Mostra il messaggio reale proveniente dall'API
       setError(err?.message || 'Something went wrong. Please try again later.')
-      // Facoltativo: log per debug
-      console.error('[signup] submit error:', err)
     } finally {
       setLoading(false)
     }
@@ -206,7 +195,7 @@ export default function Page() {
       <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-semibold">Sign up</h1>
-          <p className="text-slate-300 text-sm mt-1">Personal Account</p>
+          <p className="text-slate-300 text-sm mt-1">Individual Account</p>
         </div>
 
         <form className="grid gap-4" onSubmit={onSubmit} noValidate>
