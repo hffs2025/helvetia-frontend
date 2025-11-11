@@ -109,6 +109,21 @@ export default function Page() {
 
   const canSubmit = isComplete && !loading
 
+  // Helper: parse JSON safe (gestisce HTML/empty body)
+  async function parseJsonSafe(res: Response) {
+    const ct = res.headers.get('content-type') || ''
+    const raw = await res.text()
+    let data: any = null
+    if (ct.includes('application/json') && raw) {
+      try { data = JSON.parse(raw) } catch { /* ignore */ }
+    }
+    if (!res.ok) {
+      const msg = (data && (data.error || data.message)) || raw || 'Request failed'
+      throw new Error(msg)
+    }
+    return data || {}
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -121,25 +136,23 @@ export default function Page() {
     try {
       setLoading(true)
 
+      const e164 = toE164(DIAL[dialCountry], phone)
+
       // 1) check email availability
       const emailRes = await fetch('/api/signup/check-email/routes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail(email) }),
       })
-      const emailData = await emailRes.json()
+      const emailData = await parseJsonSafe(emailRes)
 
       // 2) check mobile availability
-      const e164 = toE164(DIAL[dialCountry], phone)
       const mobileRes = await fetch('/api/signup/check-mobile/routes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: e164 }),
       })
-      const mobileData = await mobileRes.json()
-
-      if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
-      if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
+      const mobileData = await parseJsonSafe(mobileRes)
 
       const emailAvailable = !!emailData?.available
       const mobileAvailable = !!mobileData?.available
@@ -168,17 +181,15 @@ export default function Page() {
           country,
         }),
       })
+      await parseJsonSafe(insertRes) // solleva se errore non-JSON/HTML
 
-      if (!insertRes.ok) {
-        const t = await insertRes.text().catch(() => '')
-        throw new Error(t || 'Failed to save temporary user.')
-      }
-
-      // redirect step successivo, passando il mobile E164
-      const target = `/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`
-      router.push(target)
+      // redirect step successivo con il mobile E.164
+      router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
     } catch (err: any) {
+      // Mostra il messaggio reale proveniente dall'API
       setError(err?.message || 'Something went wrong. Please try again later.')
+      // Facoltativo: log per debug
+      console.error('[signup] submit error:', err)
     } finally {
       setLoading(false)
     }
