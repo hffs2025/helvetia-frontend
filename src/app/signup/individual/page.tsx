@@ -123,7 +123,7 @@ export default function Page() {
 
       const e164 = toE164(DIAL[dialCountry], phone)
 
-      // 1) check email availability  (FIX: path senza /routes)
+      // 1) check email availability
       const emailRes = await fetch('/api/signup/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,7 +131,7 @@ export default function Page() {
       })
       const emailData = await emailRes.json()
 
-      // 2) check mobile availability (FIX: path senza /routes)
+      // 2) check mobile availability
       const mobileRes = await fetch('/api/signup/check-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,25 +157,8 @@ export default function Page() {
         return
       }
 
-      // 3) entrambi disponibili → inserisci in UsrTemp
-      const insertRes = await fetch('/api/signup/usrtemp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email: normalizedEmail(email),
-          mobile: e164,
-          country,
-        }),
-      })
-
-      if (!insertRes.ok) {
-        const t = await insertRes.text().catch(() => '')
-        throw new Error(t || 'Failed to save temporary user.')
-      }
-
-      // redirect step successivo con il mobile E.164
+      // ✅ NIENTE INSERIMENTO IN UsrTemp
+      // Success → redirect con il mobile E.164
       router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again later.')
