@@ -179,7 +179,7 @@ function Hero() {
         <div className="flex items-center justify-center">
           <div className="w-full max-w-md rounded-2xl overflow-hidden border border-white/15 bg-white/5 flex items-center justify-center p-4">
             <Image
-              src="/images/Supind.png"
+              src="/images/Ecosystem.png"
               alt="Helvetia signup illustration"
               width={500}
               height={400}
