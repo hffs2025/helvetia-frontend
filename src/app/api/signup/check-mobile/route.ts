@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL =
+const RAW_API_URL =
   process.env.CHECK_MOBILE_API_URL ||
-  process.env.NEXT_PUBLIC_CHECK_MOBILE_API_URL;
+  process.env.NEXT_PUBLIC_CHECK_MOBILE_API_URL ||
+  "";
+
+const API_URL = RAW_API_URL.trim();
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +15,13 @@ export async function POST(req: NextRequest) {
     const { mobileE164 } = await req.json().catch(() => ({}));
 
     if (!mobileE164) {
+      return NextResponse.json({ available: false }, { status: 200 });
+    }
+
+    if (!API_URL) {
+      console.error("❌ CHECK_MOBILE_API_URL is missing");
       return NextResponse.json(
-        { available: false, error: "Missing mobile" },
+        { available: false, error: "missing_api_url" },
         { status: 200 }
       );
     }
@@ -27,17 +35,18 @@ export async function POST(req: NextRequest) {
 
     const text = await upstream.text();
     let data: any = {};
-    try { data = JSON.parse(text); } catch {}
+    try {
+      data = JSON.parse(text);
+    } catch {}
 
-    // NORMALIZZIAMO
     return NextResponse.json(
       { available: !!data.available },
       { status: 200 }
     );
-
   } catch (err) {
+    console.error("❌ check-mobile route error:", err);
     return NextResponse.json(
-      { available: false },
+      { available: false, error: "temporary_error" },
       { status: 200 }
     );
   }
