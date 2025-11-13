@@ -129,35 +129,35 @@ export default function Page() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail(email) }),
       })
-      const emailData = await emailRes.json()
+      const emailData: { available?: boolean; error?: string } = await emailRes.json()
 
       // 2) check mobile availability
       const mobileRes = await fetch('/api/signup/check-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile: e164 }),
+        body: JSON.stringify({ mobileE164: e164 }),
       })
-      const mobileData = await mobileRes.json()
+      const mobileData: { available?: boolean; error?: string } = await mobileRes.json()
 
       if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
       if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
 
-      const emailAvailable = !!emailData?.available
-      const mobileAvailable = !!mobileData?.available
+      // usa SOLO i booleani restituiti dalle API
+      const emailUnavailable = emailData.available === false
+      const mobileUnavailable = mobileData.available === false
 
-      setEmailTaken(!emailAvailable)
-      setMobileTaken(!mobileAvailable)
+      setEmailTaken(emailUnavailable)
+      setMobileTaken(mobileUnavailable)
 
-      if (!emailAvailable || !mobileAvailable) {
+      if (emailUnavailable || mobileUnavailable) {
         const problems = [
-          !emailAvailable ? 'This email is already registered with us.' : null,
-          !mobileAvailable ? 'This mobile number is already registered with us.' : null,
+          emailUnavailable ? 'This email is already registered with us.' : null,
+          mobileUnavailable ? 'This mobile number is already registered with us.' : null,
         ].filter(Boolean)
         setError(problems.join(' '))
         return
       }
 
-      // ✅ NIENTE INSERIMENTO IN UsrTemp
       // Success → redirect con il mobile E.164
       router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
     } catch (err: any) {
