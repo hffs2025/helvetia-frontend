@@ -139,7 +139,7 @@ export default function Page() {
       })
       const emailData = (await emailRes.json()) as { available?: boolean; error?: string }
 
-      // 2) check mobile availability (ATTENZIONE: mobileE164)
+      // 2) check mobile availability (mobileE164)
       const mobileRes = await fetch('/api/signup/check-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,8 +165,8 @@ export default function Page() {
         return
       }
 
-      // tutto OK → step successivo
-      router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
+      // Per ora SOLO verifica, niente redirect/insert
+      // Qui in futuro potremo aggiungere insert in UsrTemp + redirect
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again later.')
     } finally {
@@ -307,7 +307,7 @@ export default function Page() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-11 rounded-xl bg white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 aria-invalid={emailTaken ? 'true' : 'false'}
                 required
               />
@@ -324,7 +324,7 @@ export default function Page() {
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? 'id ' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Password"
@@ -393,7 +393,7 @@ export default function Page() {
               style={{ backgroundColor: canSubmit ? ACCENT : DISABLED_BG, color: BACKGROUND }}
               aria-disabled={!canSubmit}
             >
-              {loading ? 'Creating account…' : 'Continue !'}
+              {loading ? 'Checking…' : 'Continue !'}
             </button>
           </div>
 
