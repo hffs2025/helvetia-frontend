@@ -34,6 +34,7 @@ const EU: Omit<Country, 'dial'>[] = [
   { code: 'SI', name: 'Slovenia' }, { code: 'ES', name: 'Spain' },
   { code: 'SE', name: 'Sweden' },
 ]
+
 const DIAL: Record<string, string> = {
   CH: '41', AT: '43', BE: '32', BG: '359', HR: '385', CY: '357', CZ: '420',
   DK: '45', EE: '372', FI: '358', FR: '33', DE: '49', GR: '30', HU: '36',
@@ -41,9 +42,12 @@ const DIAL: Record<string, string> = {
   NL: '31', PL: '48', PT: '351', RO: '40', SK: '421', SI: '386',
   ES: '34', SE: '46',
 }
+
 const SWITZERLAND: Country = { code: 'CH', name: 'Switzerland', dial: DIAL['CH'] }
+
 const attachDial = (list: Omit<Country, 'dial'>[]): Country[] =>
   list.map(c => ({ ...c, dial: DIAL[c.code] || '' }))
+
 const flagEmoji = (code: string) =>
   code.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)))
 
@@ -81,6 +85,7 @@ export default function Page() {
   const phoneOk = phone.trim().length >= 5 && !!dialCountry
 
   const normalizedEmail = (raw: string) => (raw || '').trim().toLowerCase()
+
   const toE164 = (dialCode: string, raw: string) => {
     const digits = (raw || '').replace(/\D/g, '')
     return `+${dialCode}${digits}`
@@ -116,7 +121,10 @@ export default function Page() {
     setMobileTaken(false)
 
     const msg = validateBasic()
-    if (msg) return setError(msg)
+    if (msg) {
+      setError(msg)
+      return
+    }
 
     try {
       setLoading(true)
@@ -129,20 +137,19 @@ export default function Page() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail(email) }),
       })
-      const emailData: { available?: boolean; error?: string } = await emailRes.json()
+      const emailData = (await emailRes.json()) as { available?: boolean; error?: string }
 
-      // 2) check mobile availability
+      // 2) check mobile availability (ATTENZIONE: mobileE164)
       const mobileRes = await fetch('/api/signup/check-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobileE164: e164 }),
       })
-      const mobileData: { available?: boolean; error?: string } = await mobileRes.json()
+      const mobileData = (await mobileRes.json()) as { available?: boolean; error?: string }
 
       if (!emailRes.ok) throw new Error(emailData?.error || 'Email verification failed')
       if (!mobileRes.ok) throw new Error(mobileData?.error || 'Mobile verification failed')
 
-      // usa SOLO i booleani restituiti dalle API
       const emailUnavailable = emailData.available === false
       const mobileUnavailable = mobileData.available === false
 
@@ -158,7 +165,7 @@ export default function Page() {
         return
       }
 
-      // Success → redirect con il mobile E.164
+      // tutto OK → step successivo
       router.push(`/app/signup/check-mobile?mobile=${encodeURIComponent(e164)}`)
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again later.')
@@ -171,7 +178,14 @@ export default function Page() {
     <div className="min-h-screen flex flex-col items-center px-4" style={{ backgroundColor: BACKGROUND }}>
       {/* Logo */}
       <div className="flex flex-col items-center justify-center mt-[5px] mb-[5px]">
-        <Image src="/images/Logo.png" alt="Helvetia Logo" width={150} height={150} priority className="object-contain" />
+        <Image
+          src="/images/Logo.png"
+          alt="Helvetia Logo"
+          width={150}
+          height={150}
+          priority
+          className="object-contain"
+        />
       </div>
 
       {/* Card */}
@@ -185,7 +199,9 @@ export default function Page() {
           {/* Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <label className="text-sm text-slate-200" htmlFor="firstName">First name</label>
+              <label className="text-sm text-slate-200" htmlFor="firstName">
+                First name
+              </label>
               <input
                 id="firstName"
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
@@ -196,7 +212,9 @@ export default function Page() {
               />
             </div>
             <div className="grid gap-2">
-              <label className="text-sm text-slate-200" htmlFor="lastName">Last name</label>
+              <label className="text-sm text-slate-200" htmlFor="lastName">
+                Last name
+              </label>
               <input
                 id="lastName"
                 className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
@@ -210,16 +228,23 @@ export default function Page() {
 
           {/* Country */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200" htmlFor="country">Country</label>
+            <label className="text-sm text-slate-200" htmlFor="country">
+              Country
+            </label>
             <select
               id="country"
               value={country}
-              onChange={e => { setCountry(e.target.value); setDialCountry(e.target.value) }}
+              onChange={e => {
+                setCountry(e.target.value)
+                setDialCountry(e.target.value)
+              }}
               className="h-11 rounded-xl border border-white/20 px-3 outline-none focus:ring-2 focus:ring-white/30"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: country ? WHITE : PLACEHOLDER }}
               required
             >
-              <option value="" disabled>Select your country</option>
+              <option value="" disabled>
+                Select your country
+              </option>
               {countries.map(({ code, name }) => (
                 <option key={code} value={code} style={{ color: ANTHRACITE }}>
                   {flagEmoji(code)} {` ${code} — ${name}`}
@@ -230,7 +255,9 @@ export default function Page() {
 
           {/* Mobile */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200" htmlFor="mobile">Mobile</label>
+            <label className="text-sm text-slate-200" htmlFor="mobile">
+              Mobile
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <select
                 aria-label="Country dial code"
@@ -240,7 +267,9 @@ export default function Page() {
                 style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: dialCountry ? WHITE : PLACEHOLDER }}
                 required
               >
-                <option value="" disabled>Select prefix</option>
+                <option value="" disabled>
+                  Select prefix
+                </option>
                 {countries.map(({ code, name, dial }) => (
                   <option key={code} value={code} style={{ color: ANTHRACITE }}>
                     {flagEmoji(code)} {` +${dial} — ${code} — ${name}`}
@@ -259,14 +288,18 @@ export default function Page() {
                   aria-invalid={mobileTaken ? 'true' : 'false'}
                   required
                 />
-                {mobileTaken && <p className="text-xs text-rose-300">This mobile number is already registered.</p>}
+                {mobileTaken && (
+                  <p className="text-xs text-rose-300">This mobile number is already registered.</p>
+                )}
               </div>
             </div>
           </div>
 
           {/* Email */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200" htmlFor="email">Email</label>
+            <label className="text-sm text-slate-200" htmlFor="email">
+              Email
+            </label>
             <div className="flex flex-col gap-1">
               <input
                 id="email"
@@ -274,7 +307,7 @@ export default function Page() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
+                className="h-11 rounded-xl bg white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30"
                 aria-invalid={emailTaken ? 'true' : 'false'}
                 required
               />
@@ -284,12 +317,14 @@ export default function Page() {
 
           {/* Password + Confirm */}
           <div className="grid gap-2">
-            <label className="text-sm text-slate-200" htmlFor="password">Password</label>
+            <label className="text-sm text-slate-200" htmlFor="password">
+              Password
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'id ' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Password"
@@ -365,11 +400,17 @@ export default function Page() {
           {/* Footer */}
           <p className="text-sm text-slate-300 text-center">
             Already have an account?{' '}
-            <Link href="/login" className="underline font-medium hover:text-slate-100">Sign in</Link>.
+            <Link href="/login" className="underline font-medium hover:text-slate-100">
+              Sign in
+            </Link>
+            .
           </p>
           <p className="text-xs text-slate-400 text-center">
             For any inquiries, please contact our customer service at{' '}
-            <a href="mailto:support@hfss.ch" className="underline hover:text-slate-200">support@hfss.ch</a>.
+            <a href="mailto:support@hfss.ch" className="underline hover:text-slate-200">
+              support@hfss.ch
+            </a>
+            .
           </p>
         </form>
       </div>
