@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // come per il mobile: prima env server-side, poi eventuale NEXT_PUBLIC
+  // 1. Prendo l'URL dell'API mobile
   const API_URL =
-    process.env["CHECK_EMAIL_API_URL"] ??
-    process.env["NEXT_PUBLIC_CHECK_EMAIL_API_URL"] ??
+    process.env["CHECK_MOBILE_API_URL"] ??
+    process.env["NEXT_PUBLIC_CHECK_MOBILE_API_URL"] ??
     "";
 
+  // 2. Leggo il body e ricavo mobileE164
   const body = await req.json().catch(() => ({}));
-  const email = String(body.email || "").trim().toLowerCase();
+  const mobileE164 = String(body.mobileE164 || "").trim();
 
-  if (!email) {
+  if (!mobileE164) {
     return NextResponse.json(
-      { available: false, error: "missing_email" },
+      { available: false, error: "missing_mobileE164" },
       { status: 400 }
     );
   }
@@ -24,10 +25,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 3. Chiamo la Lambda MOBILE
   const upstream = await fetch(API_URL, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ mobileE164 }),
     cache: "no-store"
   }).catch(() => null);
 
@@ -51,6 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (data?.error) {
+    // Propago l'errore della Lambda mobile se ce n'è uno
     return NextResponse.json(
       { available: false, error: data.error },
       { status: 502 }

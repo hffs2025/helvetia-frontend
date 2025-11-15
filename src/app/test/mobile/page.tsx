@@ -49,12 +49,12 @@ export default function TestMobilePage() {
   }
 
   return (
-    <div style={{ padding: 40, color: 'white', background: '#071C2C', height: '100vh' }}>
+    <div style={{ padding: 40, color: 'white', background: '#071C2C', minHeight: '100vh' }}>
       <h1>Test Mobile Check</h1>
 
       <input
         type="text"
-        placeholder="+41790000000"
+        placeholder="+417900000000"
         value={mobile}
         onChange={e => setMobile(e.target.value)}
         style={{
@@ -72,7 +72,7 @@ export default function TestMobilePage() {
 
       <button
         onClick={checkMobile}
-        disabled={loading}
+        disabled={loading || !mobile.trim()}
         style={{
           marginTop: 20,
           padding: '10px 20px',
@@ -113,7 +113,7 @@ export default function TestMobilePage() {
       </div>
 
       <div style={{ marginTop: 30 }}>
-        <div>Response raw dall'API:</div>
+        <div>Response raw dall&apos;API:</div>
         <textarea
           readOnly
           value={responseBody}
