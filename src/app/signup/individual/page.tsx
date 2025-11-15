@@ -130,12 +130,13 @@ export default function Page() {
       setLoading(true)
 
       const e164 = toE164(DIAL[dialCountry], phone)
+      const normalized = normalizedEmail(email)
 
       // 1) check email availability
       const emailRes = await fetch('/api/signup/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail(email) }),
+        body: JSON.stringify({ email: normalized }),
       })
       const emailData = (await emailRes.json()) as { available?: boolean; error?: string }
 
@@ -165,8 +166,25 @@ export default function Page() {
         return
       }
 
-      // Per ora SOLO verifica, niente redirect/insert
-      // Qui in futuro potremo aggiungere insert in UsrTemp + redirect
+      // ✅ Entrambi disponibili: memorizza i dati e redirect alla pagina OTP
+      const payload = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        country,
+        mobileE164: e164,
+        email: normalized,
+        password, // NB: in futuro meglio non salvare la password in chiaro lato client
+      }
+
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('signupIndividual', JSON.stringify(payload))
+        }
+      } catch {
+        // se fallisce lo storage non blocchiamo il flusso
+      }
+
+      router.push('/otp/mobile')
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again later.')
     } finally {
