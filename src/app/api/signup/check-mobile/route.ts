@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // Leggo prima la env "server-side", se non c'è uso quella NEXT_PUBLIC
+  // come per il mobile: prima env server-side, poi eventuale NEXT_PUBLIC
   const API_URL =
-    process.env["CHECK_MOBILE_API_URL"] ??
-    process.env["NEXT_PUBLIC_CHECK_MOBILE_API_URL"] ??
+    process.env["CHECK_EMAIL_API_URL"] ??
+    process.env["NEXT_PUBLIC_CHECK_EMAIL_API_URL"] ??
     "";
 
   const body = await req.json().catch(() => ({}));
-  const mobileE164 = String(body.mobileE164 || "").trim();
+  const email = String(body.email || "").trim().toLowerCase();
 
-  if (!mobileE164) {
+  if (!email) {
     return NextResponse.json(
-      { available: false, error: "missing_mobileE164" },
+      { available: false, error: "missing_email" },
       { status: 400 }
     );
   }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const upstream = await fetch(API_URL, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ mobileE164 }),
+    body: JSON.stringify({ email }),
     cache: "no-store"
   }).catch(() => null);
 
