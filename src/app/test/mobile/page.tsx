@@ -7,18 +7,44 @@ export default function TestMobilePage() {
   const [result, setResult] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const [requestBody, setRequestBody] = useState('')
+  const [responseBody, setResponseBody] = useState('')
+
   async function checkMobile() {
     setLoading(true)
     setResult(null)
 
-    const res = await fetch('/api/signup/check-mobile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mobileE164: mobile })
-    })
+    const payload = { mobileE164: mobile.trim() }
+    setRequestBody(JSON.stringify(payload, null, 2))
 
-    const data = await res.json()
-    setResult(`available: ${data?.available}`)
+    try {
+      const res = await fetch('/api/signup/check-mobile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const text = await res.text()
+      setResponseBody(text)
+
+      let data: any = null
+      try {
+        data = JSON.parse(text)
+      } catch {
+        setResult('Errore: risposta non JSON')
+        return
+      }
+
+      if (data.error) {
+        setResult(`ERRORE backend: ${data.error} (available=${data.available})`)
+      } else {
+        setResult(`available: ${data.available}`)
+      }
+    } catch (err: any) {
+      setResponseBody(`ERROR: ${String(err)}`)
+      setResult('Errore durante la chiamata fetch')
+    }
+
     setLoading(false)
   }
 
@@ -65,7 +91,46 @@ export default function TestMobilePage() {
           {result}
         </p>
       )}
+
+      <div style={{ marginTop: 30 }}>
+        <div>Request JSON inviato:</div>
+        <textarea
+          readOnly
+          value={requestBody}
+          style={{
+            marginTop: 10,
+            width: '100%',
+            height: 120,
+            padding: 10,
+            background: '#0B2C40',
+            color: 'white',
+            borderRadius: 8,
+            border: '1px solid white',
+            fontFamily: 'monospace',
+            fontSize: 13
+          }}
+        />
+      </div>
+
+      <div style={{ marginTop: 30 }}>
+        <div>Response raw dall'API:</div>
+        <textarea
+          readOnly
+          value={responseBody}
+          style={{
+            marginTop: 10,
+            width: '100%',
+            height: 160,
+            padding: 10,
+            background: '#0B2C40',
+            color: 'white',
+            borderRadius: 8,
+            border: '1px solid white',
+            fontFamily: 'monospace',
+            fontSize: 13
+          }}
+        />
+      </div>
     </div>
   )
 }
-
