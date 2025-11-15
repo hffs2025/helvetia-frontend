@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // 🔴 Leggiamo la env a runtime, con notazione stringa
-  const API_URL = process.env["CHECK_MOBILE_API_URL"] ?? "";
+  // Leggo prima la env "server-side", se non c'è uso quella NEXT_PUBLIC
+  const API_URL =
+    process.env["CHECK_MOBILE_API_URL"] ??
+    process.env["NEXT_PUBLIC_CHECK_MOBILE_API_URL"] ??
+    "";
 
   const body = await req.json().catch(() => ({}));
   const mobileE164 = String(body.mobileE164 || "").trim();
@@ -16,10 +19,7 @@ export async function POST(req: NextRequest) {
 
   if (!API_URL) {
     return NextResponse.json(
-      {
-        available: false,
-        error: "missing_api_url"
-      },
+      { available: false, error: "missing_api_url" },
       { status: 500 }
     );
   }
