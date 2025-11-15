@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.CHECK_MOBILE_API_URL || "";
-
 export async function POST(req: NextRequest) {
+  // 🔴 Leggiamo la env a runtime, con notazione stringa
+  const API_URL = process.env["CHECK_MOBILE_API_URL"] ?? "";
+
   const body = await req.json().catch(() => ({}));
   const mobileE164 = String(body.mobileE164 || "").trim();
 
-  if (!mobileE164 || !API_URL) {
+  if (!mobileE164) {
     return NextResponse.json(
-      { available: false, error: "missing_mobile_or_api_url" },
+      { available: false, error: "missing_mobileE164" },
+      { status: 400 }
+    );
+  }
+
+  if (!API_URL) {
+    return NextResponse.json(
+      {
+        available: false,
+        error: "missing_api_url"
+      },
       { status: 500 }
     );
   }
@@ -39,7 +50,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Se la Lambda segnala un errore, lo propaghiamo
   if (data?.error) {
     return NextResponse.json(
       { available: false, error: data.error },
@@ -47,8 +57,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Solo qui decidiamo davvero la disponibilità
-  const available = data?.available === true;
-
-  return NextResponse.json({ available });
+  return NextResponse.json({ available: data?.available === true });
 }
