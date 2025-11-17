@@ -14,6 +14,7 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.927.0",
     "@radix-ui/react-slot": "^1.2.3",
+    "@sumsub/websdk": "^2.5.0",
     "argon2": "^0.44.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
