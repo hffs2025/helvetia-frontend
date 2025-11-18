@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const SUMSUB_TOKEN_API_URL = process.env.SUMSUB_TOKEN_API_URL;
+// Usa la variabile server-side, oppure il fallback public
+const SUMSUB_TOKEN_API_URL =
+  process.env.SUMSUB_TOKEN_API_URL || process.env.NEXT_PUBLIC_SUMSUB_TOKEN_API_URL;
 
 export async function POST(req: NextRequest) {
   if (!SUMSUB_TOKEN_API_URL) {
-    console.error('SUMSUB_TOKEN_API_URL is not defined');
+    console.error(
+      'SUMSUB_TOKEN_API_URL / NEXT_PUBLIC_SUMSUB_TOKEN_API_URL not defined'
+    );
     return NextResponse.json(
       { error: 'Sumsub token backend not configured' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
       console.error('sumsub-token-svc returned non-JSON:', text);
       return NextResponse.json(
         { error: 'Invalid response from Sumsub token backend' },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
     console.error('/api/sumsub-token error:', err);
     return NextResponse.json(
       { error: 'Internal error in Sumsub token API' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
