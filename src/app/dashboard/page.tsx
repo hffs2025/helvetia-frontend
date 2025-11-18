@@ -86,6 +86,9 @@ export default function DashboardPage() {
   const [currentCheck, setCurrentCheck] = useState<'kyc' | 'kyb' | null>(null)
   const [sumsubInstance, setSumsubInstance] = useState<any | null>(null)
 
+  // messaggio di successo KYC
+  const [showKycSuccess, setShowKycSuccess] = useState(false)
+
   // ===== LOGIN GUARD =====
   useEffect(() => {
     const u = getStoredUser()
@@ -170,6 +173,7 @@ export default function DashboardPage() {
 
           if (purpose === 'kyc' && answer === 'GREEN') {
             setKycVerified(true)
+            setShowKycSuccess(true) // mostra messaggio KYC completato
           }
           if (purpose === 'kyb' && answer === 'GREEN') {
             setKybVerified(true)
@@ -341,11 +345,7 @@ export default function DashboardPage() {
                     <div
                       className={`px-3 py-2 rounded-xl text-sm transition-colors ${
                         isActive ? 'font-medium' : 'font-normal'
-                      } ${
-                        disabled
-                          ? 'opacity-50'
-                          : 'opacity-100'
-                      }`}
+                      } ${disabled ? 'opacity-50' : 'opacity-100'}`}
                       style={
                         isActive && !disabled
                           ? { backgroundColor: ACCENT, color: BACKGROUND }
@@ -378,65 +378,67 @@ export default function DashboardPage() {
             {/* HOME */}
             {active === 'home' && (
               <>
-{/* Overview container */}
-<section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
-  <h2 className="text-sm font-semibold">Overview</h2>
-  <p className="text-sm text-slate-300">
-    Welcome to your HFSS dashboard. Here is a quick summary of your
-    profile.
-  </p>
+                {/* Overview container */}
+                <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
+                  <h2 className="text-sm font-semibold">Overview</h2>
+                  <p className="text-sm text-slate-300">
+                    Welcome to your HFSS dashboard. Here is a quick summary of your
+                    profile.
+                  </p>
 
-  {/* 4 box con i dati utente */}
-  <div className="grid sm:grid-cols-2 gap-4 pt-2">
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-        User ID
-      </p>
-      <p className="mt-1 text-xs font-mono text-slate-50">
-        {user.idUser}
-      </p>
-    </div>
+                  {/* 4 box con i dati utente */}
+                  <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+                        User ID
+                      </p>
+                      <p className="mt-1 text-xs font-mono text-slate-50">
+                        {user.idUser}
+                      </p>
+                    </div>
 
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-        Email
-      </p>
-      <p className="mt-1 text-sm text-slate-50">
-        {user.email}
-      </p>
-    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+                        Email
+                      </p>
+                      <p className="mt-1 text-sm text-slate-50">
+                        {user.email}
+                      </p>
+                    </div>
 
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-        Country
-      </p>
-      <p className="mt-1 text-sm text-slate-50">
-        {user.country} ({user.country2})
-      </p>
-    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+                        Country
+                      </p>
+                      <p className="mt-1 text-sm text-slate-50">
+                        {user.country} ({user.country2})
+                      </p>
+                    </div>
 
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-        Mobile
-      </p>
-      <p className="mt-1 text-sm text-slate-50">
-        {user.mobileE164}
-      </p>
-    </div>
-  </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+                        Mobile
+                      </p>
+                      <p className="mt-1 text-sm text-slate-50">
+                        {user.mobileE164}
+                      </p>
+                    </div>
+                  </div>
 
-  {/* testo esplicativo su 4 righe */}
-  <p className="text-xs text-slate-300 pt-3">
-    To use HFSS services, you must complete the required compliance checks.<br />
-    <br></br>
-    For a personal account, you need to pass <span className="font-semibold">KYC</span>.<br />
-    <br></br>
-    For a business account, you must pass both <span className="font-semibold">KYC</span> and <span className="font-semibold">KYB</span>.<br />
-    <br></br>
-    Until you have at least successfully completed your <span className="font-semibold">KYC</span> verification, you will not have access to all sections of this dashboard.
-  </p>
-</section>
-
+                  {/* testo esplicativo su 4 righe */}
+                  <p className="text-xs text-slate-300 pt-3">
+                    To use HFSS services, you must complete the required compliance
+                    checks.<br />
+                    For a personal account, you need to pass{' '}
+                    <span className="font-semibold">KYC</span>.<br />
+                    For a business account, you must pass both{' '}
+                    <span className="font-semibold">KYC</span> and{' '}
+                    <span className="font-semibold">KYB</span>.<br />
+                    Until you have at least successfully completed your KYC
+                    verification, you will not have access to all sections of this
+                    dashboard.
+                  </p>
+                </section>
               </>
             )}
 
@@ -465,9 +467,13 @@ export default function DashboardPage() {
                       style={{ backgroundColor: ACCENT, color: BACKGROUND }}
                       className="mt-1 h-9 rounded-xl text-xs font-medium hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
                       onClick={handleStartKyc}
-                      disabled={kycLoading}
+                      disabled={kycLoading || kycVerified}
                     >
-                      {kycLoading ? 'Starting KYC…' : 'Start KYC'}
+                      {kycVerified
+                        ? 'KYC completed'
+                        : kycLoading
+                        ? 'Starting KYC…'
+                        : 'Start KYC'}
                     </button>
                   </div>
 
@@ -485,7 +491,6 @@ export default function DashboardPage() {
                       className="mt-1 h-9 rounded-xl text-xs font-medium hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
                       onClick={handleStartKyb}
                       disabled={kybLoading || !kycVerified}
-
                     >
                       {kybLoading ? 'Starting KYB…' : 'Start KYB'}
                     </button>
@@ -512,6 +517,27 @@ export default function DashboardPage() {
                       </button>
                     </div>
                     <div id="sumsub-kyc-container" className="mt-2" />
+                  </div>
+                )}
+
+                {/* Messaggio di successo KYC */}
+                {showKycSuccess && (
+                  <div className="mt-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 p-4 flex items-start justify-between gap-3">
+                    <div className="text-sm text-emerald-50">
+                      <p className="font-semibold">KYC verification completed</p>
+                      <p className="text-xs text-emerald-100 mt-1">
+                        Your KYC verification has been successfully completed. You can
+                        now proceed with KYB (if you need a business account) and
+                        access the full HFSS dashboard.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowKycSuccess(false)}
+                      className="text-[11px] px-3 py-1 rounded-full border border-emerald-300/60 bg-emerald-500/20 hover:bg-emerald-500/40 transition"
+                    >
+                      OK
+                    </button>
                   </div>
                 )}
               </section>

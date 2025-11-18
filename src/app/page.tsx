@@ -144,7 +144,7 @@ function Hero() {
           {/* Pulsanti */}
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link
-              href="/signup/individual"
+              href="/signup"
               className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
             >
               Open an Individual or Business Account
@@ -358,9 +358,7 @@ function Partners() {
               Settlement accounts and safeguarding partners for regulated payment flows.
             </p>
             <div className="flex items-center gap-4 mt-auto">
-              <Image src="/images/bank1.png" alt="" width={60} height={24} className="object-contain" />
-              <Image src="/images/bank2.png" alt="" width={60} height={24} className="object-contain" />
-            </div>
+              </div>
           </div>
 
           {/* Crypto Providers */}
@@ -375,9 +373,7 @@ function Partners() {
               Liquidity venues, custodians and on/off-ramp service providers.
             </p>
             <div className="flex items-center gap-4 mt-auto">
-              <Image src="/images/crypto1.png" alt="" width={60} height={24} className="object-contain" />
-              <Image src="/images/crypto2.png" alt="" width={60} height={24} className="object-contain" />
-            </div>
+             </div>
           </div>
 
           {/* Crypto Wallet */}
@@ -392,9 +388,7 @@ function Partners() {
               Multi-network wallet providers ensuring secure storage and transfers.
             </p>
             <div className="flex items-center gap-4 mt-auto">
-              <Image src="/images/wallet1.png" alt="" width={60} height={24} className="object-contain" />
-              <Image src="/images/wallet2.png" alt="" width={60} height={24} className="object-contain" />
-            </div>
+             </div>
           </div>
 
         {/* Technology */}
