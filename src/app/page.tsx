@@ -58,13 +58,7 @@ function Header() {
           <a className="hover:text-white cursor-pointer" href="#services">Services</a>
           <a className="hover:text-white cursor-pointer" href="#features">Capabilities</a>
           <a className="hover:text-white cursor-pointer" href="#compliance">Security &amp; Compliance</a>
-          <button
-            onClick={() => handleScroll('how-to-signup')}
-            className="hover:text-white cursor-pointer bg-transparent border-none outline-none text-gray-200 text-sm"
-          >
-            How to Sign Up
-          </button>
-
+          <a className="hover:text-white cursor-pointer" href="#partners">Partners</a>
           {/* Our Dashboard (invisibile ma non cancellato) */}
           <button
             onClick={() => handleScroll('our-dashboard')}
@@ -153,13 +147,7 @@ function Hero() {
               href="/signup/individual"
               className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
             >
-              Open Individual Account
-            </Link>
-            <Link
-              href="/signup/business"
-              className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm"
-            >
-              Open Business Account
+              Open an Individual or Business Account
             </Link>
           </div>
 
@@ -254,34 +242,50 @@ function Features() {
             <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA" desc={`SEPA (Single Euro Payments Area) enables cashless euro payments across Europe as easily as domestic transfers.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA INSTANT" desc={`Immediate euro credit transfers 24/7/365 within SEPA.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="SEPA INSTANT" desc={`Immediate euro credit transfers 24/7/365 within SEPA.
+            
+
+            `} 
+            />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`Faster-than-standard payments, typically settled within hours.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="EXPRESS PAYMENT" desc={`Faster-than-standard payments, typically settled within hours.
+              
+              `} />
           </div>
         </div>
 
         <div className="mt-6 grid md:grid-cols-3 gap-4">
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Dedicated Crypto Account" desc={`EUR account dedicated to Crypto Trading • On/Off Ramp • Multiple networks.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Dedicated Crypto Account" desc={`EUR account dedicated to Crypto Trading. 
+              
+              `} />
           </div>
           <div className="force-preline">
             <Feature icon={<IconZap className="w-5 h-5" />} title="Crypto Trading" desc={`All trading activities • On/Off Ramp • Crypto/Crypto • Multiple networks.`} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Custodian Wallet" desc={`Secure custody with bank-grade infrastructure.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Custodian Wallet" desc={`Secure custody with bank-grade infrastructure.
+              
+              `} />
           </div>
         </div>
 
         <div className="mt-6 grid md:grid-cols-3 gap-4">
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Currency Exchange" desc={`24/7 conversion with competitive rates.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Currency Exchange" desc={`24/7 conversion with competitive rates.
+              
+              `} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Debit Card" desc={`Instant card issuing and management.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Debit Card" desc={`Instant virtual card issuing and management.
+              Phisical card on request.
+              `} />
           </div>
           <div className="force-preline">
-            <Feature icon={<IconZap className="w-5 h-5" />} title="Developer First" desc={`Modern APIs • Webhooks • Sandbox for rapid integration.`} />
+            <Feature icon={<IconZap className="w-5 h-5" />} title="Developer First" desc={`Modern APIs • Webhooks • Sandbox for rapid integration.
+              
+              `} />
           </div>
         </div>
       </div>
@@ -320,190 +324,141 @@ function InfoCard({ icon, title, desc }: { icon: React.ReactNode; title: string;
   );
 }
 
-/* ====================== Nuovi moduli alternati ====================== */
-function HowToSignUp() {
+/* ====================== Partners (ex HowToSignUp) ====================== */
+function Partners() {
   return (
     <section
-      id="how-to-signup"
+      id="partners"
       className="w-full text-white"
       style={{ background: "rgba(255,255,255,0.05)" }}
     >
       <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-        {/* Titolo */}
-        <h2 className="text-2xl md:text-3xl font-semibold mb-8">
-          How to Sign Up
+        
+        <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+          Partners
         </h2>
 
-        {/* Step 1 */}
-        <div className="inline-flex items-center justify-center text-sm md:text-base font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white mb-8">
-          Step 1
+        <p className="text-white/80 max-w-2xl mx-auto text-sm md:text-base">
+          Our infrastructure is built together with trusted financial, crypto and
+          technology partners ensuring resilience, compliance and global scalability.
+        </p>
+
+        {/* GRID 5 BOX */}
+        <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-5 gap-6 text-left">
+
+          {/* Banks & EMIs */}
+          <div className="rounded-2xl border border-white/20 bg-white/5 px-5 py-6 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+                <IconEuro className="w-5 h-5" />
+              </div>
+              <div className="font-medium text-white">Banks &amp; EMIs</div>
+            </div>
+            <p className="text-sm text-white/80 mb-4">
+              Settlement accounts and safeguarding partners for regulated payment flows.
+            </p>
+            <div className="flex items-center gap-4 mt-auto">
+              <Image src="/images/bank1.png" alt="" width={60} height={24} className="object-contain" />
+              <Image src="/images/bank2.png" alt="" width={60} height={24} className="object-contain" />
+            </div>
+          </div>
+
+          {/* Crypto Providers */}
+          <div className="rounded-2xl border border-white/20 bg-white/5 px-5 py-6 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+                <IconCrypto className="w-5 h-5" />
+              </div>
+              <div className="font-medium text-white">Crypto Providers</div>
+            </div>
+            <p className="text-sm text-white/80 mb-4">
+              Liquidity venues, custodians and on/off-ramp service providers.
+            </p>
+            <div className="flex items-center gap-4 mt-auto">
+              <Image src="/images/crypto1.png" alt="" width={60} height={24} className="object-contain" />
+              <Image src="/images/crypto2.png" alt="" width={60} height={24} className="object-contain" />
+            </div>
+          </div>
+
+          {/* Crypto Wallet */}
+          <div className="rounded-2xl border border-white/20 bg-white/5 px-5 py-6 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+                <IconCard className="w-5 h-5" />
+              </div>
+              <div className="font-medium text-white">Crypto Wallet</div>
+            </div>
+            <p className="text-sm text-white/80 mb-4">
+              Multi-network wallet providers ensuring secure storage and transfers.
+            </p>
+            <div className="flex items-center gap-4 mt-auto">
+              <Image src="/images/wallet1.png" alt="" width={60} height={24} className="object-contain" />
+              <Image src="/images/wallet2.png" alt="" width={60} height={24} className="object-contain" />
+            </div>
+          </div>
+
+        {/* Technology */}
+<div className="rounded-2xl border border-white/20 bg-white/5 px-5 py-6 flex flex-col">
+  <div className="flex items-center gap-3 mb-3">
+    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+      <IconApi className="w-5 h-5" />
+    </div>
+    <div className="font-medium text-white">Technology</div>
+  </div>
+
+  <p className="text-sm text-white/80 mb-6">
+    Cloud infrastructure and mission-critical computing systems.
+  </p>
+
+  {/* LOGO AWS CENTRATO */}
+  <div className="flex justify-center items-center mt-auto">
+  <div className="bg-white rounded-xl px-4 py-2 flex items-center justify-center">
+    <Image
+      src="/images/AWSLogo.svg"
+      alt="AWS Logo"
+      width={110}
+      height={40}
+      className="object-contain"
+    />
+  </div>
+</div>
+</div>
+
+
+{/* Compliance */}
+<div className="rounded-2xl border border-white/20 bg-white/5 px-5 py-6 flex flex-col">
+  <div className="flex items-center gap-3 mb-3">
+    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+      <IconLock className="w-5 h-5" />
+    </div>
+    <div className="font-medium text-white">Compliance</div>
+  </div>
+
+  <p className="text-sm text-white/80 mb-6">
+    KYC, AML and identity verification platforms integrated into our flows.
+  </p>
+
+  {/* LOGO SUMSUB CENTRATO */}
+  <div className="flex justify-center items-center mt-auto">
+  <div className="bg-white rounded-xl px-4 py-2 flex items-center justify-center">
+    <Image
+      src="/images/SumSubLogo.png"
+      alt="SumSub Logo"
+      width={70}
+      height={20}
+      className="object-contain"
+    />
+  </div>
+</div>
+</div>
+
+
         </div>
 
-        {/* LABELS iniziali */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-center leading-snug min-h-[60px] flex items-center justify-center">
-            Helvetia Financial Services only onboards Individual User with residence in
-            Switzerland or European Union Countries
-          </div>
-          <div className="rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-center leading-snug min-h-[60px] flex items-center justify-center">
-            Helvetia Financial Services only onboards Business User with registered office in
-            Switzerland or European Union Countries
-          </div>
-
-          {/* Testo intermedio */}
-          <div className="md:col-span-2 text-base md:text-lg font-medium text-white/90 text-center my-4">
-            Fill up all fields
-          </div>
-
-          {/* STEP 1 immagini */}
-          <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-            <Image
-              src="/images/Supind.png"
-              alt="Individual account"
-              width={500}
-              height={540}
-              className="object-contain"
-              priority
-            />
-          </div>
-          <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-            <Image
-              src="/images/Supbus.png"
-              alt="Business account"
-              width={500}
-              height={540}
-              className="object-contain"
-              priority
-            />
-          </div>
-
-          {/* Colonna sinistra (Step 2, 4) */}
-          <div className="flex flex-col gap-10 text-left">
-            {/* Step 2 label */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
-                Step 2
-              </div>
-              <div className="text-sm md:text-base font-medium text-white/90">
-                Verify your Mobile Number
-              </div>
-            </div>
-            {/* Step 2 container */}
-            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-              <Image
-                src="/images/VerMobile.png"
-                alt="Verify Mobile Number"
-                width={500}
-                height={540}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            {/* Step 4 label */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
-                Step 4
-              </div>
-              <div className="text-sm md:text-base font-medium text-white/90">
-                Create Account
-              </div>
-            </div>
-            {/* Step 4 container */}
-            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-              <Image
-                src="/images/CreateAccount.png"
-                alt="Create Account"
-                width={500}
-                height={540}
-                className="object-contain"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* Colonna destra (Step 3, 5) */}
-          <div className="flex flex-col gap-10 text-left">
-            {/* Step 3 label */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
-                Step 3
-              </div>
-              <div className="text-sm md:text-base font-medium text-white/90">
-                Verify your Email Address
-              </div>
-            </div>
-            {/* Step 3 container */}
-            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-              <Image
-                src="/images/VerEmail.png"
-                alt="Verify Email Address"
-                width={500}
-                height={540}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            {/* Step 5 label */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center text-xs md:text-sm font-semibold px-3 py-1.5 rounded-full border border-white/30 bg-white/10 text-white">
-                Step 5
-              </div>
-              <div className="text-sm md:text-base font-medium text-white/90">
-                Summary
-              </div>
-            </div>
-            {/* Step 5 container */}
-            <div className="h-[540px] rounded-2xl border border-white/15 bg-white/5 flex items-center justify-center overflow-hidden p-4">
-              <Image
-                src="/images/Summary.png"
-                alt="Summary step"
-                width={500}
-                height={540}
-                className="object-contain"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="mt-12 grid md:grid-cols-2 gap-6">
-          <Link
-            href="/signup/individual"
-            className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
-          >
-            Open Individual Account
-          </Link>
-          <Link
-            href="/signup/business"
-            className="px-5 py-3 rounded-2xl border border-white/20 hover:bg-white/10 text-sm text-center"
-          >
-            Open Business Account
-          </Link>
-        </div>
       </div>
     </section>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -652,8 +607,7 @@ function HomePageInner() {
       <Services />
       <Features />
       <Compliance />
-      {/* Nuovi moduli a colori alternati */}
-      <HowToSignUp />
+      <Partners />
 
       {/* OurDashboard non renderizzato quando SHOW_DASHBOARD === false */}
       {SHOW_DASHBOARD && <OurDashboard />}
