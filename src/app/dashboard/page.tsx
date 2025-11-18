@@ -77,6 +77,15 @@ export default function DashboardPage() {
   const [kycLoading, setKycLoading] = useState(false)
   const [kybLoading, setKybLoading] = useState(false)
 
+  // stato locale per KYC/KYB verificati (inizialmente NO)
+  const [kycVerified, setKycVerified] = useState(false)
+  const [kybVerified, setKybVerified] = useState(false)
+
+  // stato per finestra Sumsub
+  const [sumsubVisible, setSumsubVisible] = useState(false)
+  const [currentCheck, setCurrentCheck] = useState<'kyc' | 'kyb' | null>(null)
+  const [sumsubInstance, setSumsubInstance] = useState<any | null>(null)
+
   // ===== LOGIN GUARD =====
   useEffect(() => {
     const u = getStoredUser()
@@ -96,6 +105,14 @@ export default function DashboardPage() {
     router.replace('/login')
   }
 
+  // ===== MENU: abilita solo alcune voci finché KYC non è verificato =====
+  function isMenuDisabled(key: MenuKey): boolean {
+    // sempre abilitati
+    if (key === 'home' || key === 'kycKyb' || key === 'security') return false
+    // le altre sezioni richiedono almeno KYC verificato
+    return !kycVerified
+  }
+
   // ===== Sumsub helpers =====
 
   async function fetchSumsubToken(purpose: 'kyc' | 'kyb') {
@@ -113,40 +130,73 @@ export default function DashboardPage() {
   }
 
   async function startSumsubFlow(purpose: 'kyc' | 'kyb') {
-  // 1) Ottieni il token dal backend
-  const accessToken = await fetchSumsubToken(purpose)
+    // mostra il container Sumsub
+    setCurrentCheck(purpose)
+    setSumsubVisible(true)
 
-  // 2) Import dinamico del WebSDK (default export = snsWebSdk)
-  const mod = await import('@sumsub/websdk')
-  const snsWebSdk = (mod as any).default || mod
+    // 1) Ottieni il token dal backend
+    const accessToken = await fetchSumsubToken(purpose)
 
-  // 3) Configura e costruisci l'istanza
-  const snsWebSdkInstance = snsWebSdk
-    .init(
-      accessToken,
-      // token update callback (ritorna una Promise con un nuovo token)
-      async () => {
-        const newToken = await fetchSumsubToken(purpose)
-        return newToken
+    // 2) Import dinamico del WebSDK (default export = snsWebSdk)
+    const mod = await import('@sumsub/websdk')
+    const snsWebSdk = (mod as any).default || mod
+
+    // 3) Configura e costruisci l'istanza
+    const instance = snsWebSdk
+      .init(
+        accessToken,
+        // token update callback (ritorna una Promise con un nuovo token)
+        async () => {
+          const newToken = await fetchSumsubToken(purpose)
+          return newToken
+        }
+      )
+      .withConf({
+        lang: 'en', // lingua dell'interfaccia
+      })
+      .withOptions({
+        addViewportTag: false,
+        adaptIframeHeight: true,
+      })
+      .onMessage((type: any, payload: any) => {
+        console.log('WebSDK onMessage:', type, payload)
+
+        // se la review è completata chiudiamo la finestra
+        if (
+          type === 'idCheck.onApplicantStatusChanged' &&
+          payload?.reviewStatus === 'completed'
+        ) {
+          const answer = payload?.reviewResult?.reviewAnswer
+
+          if (purpose === 'kyc' && answer === 'GREEN') {
+            setKycVerified(true)
+          }
+          if (purpose === 'kyb' && answer === 'GREEN') {
+            setKybVerified(true)
+          }
+
+          handleCloseSumsub()
+        }
+      })
+      .build()
+
+    // 4) Lancia il WebSDK nel container
+    instance.launch('#sumsub-kyc-container')
+    setSumsubInstance(instance)
+  }
+
+  function handleCloseSumsub() {
+    try {
+      if (sumsubInstance?.destroy) {
+        sumsubInstance.destroy()
       }
-    )
-    .withConf({
-      lang: 'en', // lingua dell'interfaccia
-    })
-    .withOptions({
-      addViewportTag: false,
-      adaptIframeHeight: true,
-    })
-    .onMessage((type: any, payload: any) => {
-      console.log('WebSDK onMessage:', type, payload)
-    })
-    .build()
-
-  // 4) Lancia il WebSDK nel container
-  snsWebSdkInstance.launch('#sumsub-kyc-container')
-}
-
-
+    } catch (e) {
+      console.warn('Error destroying Sumsub SDK instance', e)
+    }
+    setSumsubInstance(null)
+    setCurrentCheck(null)
+    setSumsubVisible(false)
+  }
 
   async function handleStartKyc() {
     if (!user?.idUser) {
@@ -275,29 +325,41 @@ export default function DashboardPage() {
             style={{ borderColor: BORDER_LIGHT }}
           >
             <nav className="space-y-1">
-              {MENU.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setActive(item.key)}
-                  className="w-full text-left"
-                >
-                  <div
-                    className={`px-3 py-2 rounded-xl text-sm transition-colors ${
-                      active === item.key ? 'font-medium' : 'font-normal'
-                    }`}
-                    style={
-                      active === item.key
-                        ? { backgroundColor: ACCENT, color: BACKGROUND }
-                        : {
-                            backgroundColor: 'transparent',
-                            color: 'rgba(226,232,240,0.9)',
-                          }
-                    }
+              {MENU.map((item) => {
+                const disabled = isMenuDisabled(item.key)
+                const isActive = active === item.key
+
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => {
+                      if (!disabled) setActive(item.key)
+                    }}
+                    disabled={disabled}
+                    className="w-full text-left disabled:cursor-not-allowed"
                   >
-                    {item.label}
-                  </div>
-                </button>
-              ))}
+                    <div
+                      className={`px-3 py-2 rounded-xl text-sm transition-colors ${
+                        isActive ? 'font-medium' : 'font-normal'
+                      } ${
+                        disabled
+                          ? 'opacity-50'
+                          : 'opacity-100'
+                      }`}
+                      style={
+                        isActive && !disabled
+                          ? { backgroundColor: ACCENT, color: BACKGROUND }
+                          : {
+                              backgroundColor: 'transparent',
+                              color: 'rgba(226,232,240,0.9)',
+                            }
+                      }
+                    >
+                      {item.label}
+                    </div>
+                  </button>
+                )
+              })}
             </nav>
           </aside>
 
@@ -316,78 +378,65 @@ export default function DashboardPage() {
             {/* HOME */}
             {active === 'home' && (
               <>
-                {/* Overview container */}
-                <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
-                  <h2 className="text-sm font-semibold">Overview</h2>
-                  <p className="text-sm text-slate-300">
-                    Welcome to your HFSS dashboard. Here is a quick summary of your
-                    profile.
-                  </p>
+{/* Overview container */}
+<section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
+  <h2 className="text-sm font-semibold">Overview</h2>
+  <p className="text-sm text-slate-300">
+    Welcome to your HFSS dashboard. Here is a quick summary of your
+    profile.
+  </p>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                        User ID
-                      </p>
-                      <p className="mt-1 text-xs font-mono text-slate-50">
-                        {user.idUser}
-                      </p>
-                    </div>
+  {/* 4 box con i dati utente */}
+  <div className="grid sm:grid-cols-2 gap-4 pt-2">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+        User ID
+      </p>
+      <p className="mt-1 text-xs font-mono text-slate-50">
+        {user.idUser}
+      </p>
+    </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                        Email
-                      </p>
-                      <p className="mt-1 text-sm text-slate-50">
-                        {user.email}
-                      </p>
-                    </div>
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+        Email
+      </p>
+      <p className="mt-1 text-sm text-slate-50">
+        {user.email}
+      </p>
+    </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                        Country
-                      </p>
-                      <p className="mt-1 text-sm text-slate-50">
-                        {user.country} ({user.country2})
-                      </p>
-                    </div>
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+        Country
+      </p>
+      <p className="mt-1 text-sm text-slate-50">
+        {user.country} ({user.country2})
+      </p>
+    </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                        Mobile
-                      </p>
-                      <p className="mt-1 text-sm text-slate-50">
-                        {user.mobileE164}
-                      </p>
-                    </div>
-                  </div>
-                </section>
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <p className="text-[11px] uppercase tracking-wide text-slate-300">
+        Mobile
+      </p>
+      <p className="mt-1 text-sm text-slate-50">
+        {user.mobileE164}
+      </p>
+    </div>
+  </div>
 
-                {/* Account creation container */}
-                <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg space-y-4 backdrop-blur">
-                  <h2 className="text-sm font-semibold text-slate-50">
-                    Create a new HFSS account
-                  </h2>
-                  <p className="text-sm text-slate-300">
-                    Choose which type of account you want to create.
-                  </p>
+  {/* testo esplicativo su 4 righe */}
+  <p className="text-xs text-slate-300 pt-3">
+    To use HFSS services, you must complete the required compliance checks.<br />
+    <br></br>
+    For a personal account, you need to pass <span className="font-semibold">KYC</span>.<br />
+    <br></br>
+    For a business account, you must pass both <span className="font-semibold">KYC</span> and <span className="font-semibold">KYB</span>.<br />
+    <br></br>
+    Until you have at least successfully completed your <span className="font-semibold">KYC</span> verification, you will not have access to all sections of this dashboard.
+  </p>
+</section>
 
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                      style={{ backgroundColor: ACCENT, color: BACKGROUND }}
-                      className="w-full sm:w-1/2 h-11 rounded-xl font-medium hover:opacity-90 transition"
-                    >
-                      Create Individual Account
-                    </button>
-
-                    <button
-                      style={{ backgroundColor: ACCENT, color: BACKGROUND }}
-                      className="w-full sm:w-1/2 h-11 rounded-xl font-medium hover:opacity-90 transition"
-                    >
-                      Create Business Account
-                    </button>
-                  </div>
-                </section>
               </>
             )}
 
@@ -435,7 +484,8 @@ export default function DashboardPage() {
                       style={{ backgroundColor: ACCENT, color: BACKGROUND }}
                       className="mt-1 h-9 rounded-xl text-xs font-medium hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
                       onClick={handleStartKyb}
-                      disabled={kybLoading}
+                      disabled={kybLoading || !kycVerified}
+
                     >
                       {kybLoading ? 'Starting KYB…' : 'Start KYB'}
                     </button>
@@ -443,15 +493,34 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Container where Sumsub WebSDK will render its UI */}
-                <div id="sumsub-kyc-container" />
+                {sumsubVisible && (
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 relative">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-slate-300">
+                        {currentCheck === 'kyc'
+                          ? 'KYC verification in progress.'
+                          : currentCheck === 'kyb'
+                          ? 'KYB verification in progress.'
+                          : 'Verification in progress.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleCloseSumsub}
+                        className="text-[11px] px-2 py-1 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 transition"
+                      >
+                        ✕ Close
+                      </button>
+                    </div>
+                    <div id="sumsub-kyc-container" className="mt-2" />
+                  </div>
+                )}
               </section>
             )}
 
             {/* ACCOUNT */}
             {active === 'account' && (
               <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
-                <h2 className="text-sm font-semibold">Account information</h2>
-
+                {/* Titolo "Account information" rimosso */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-slate-300">
@@ -553,15 +622,27 @@ export default function DashboardPage() {
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-200">KYC verified</span>
-                    <span className="inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border border-emerald-400/60 text-emerald-100 bg-emerald-500/10">
-                      YES
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border ${
+                        kycVerified
+                          ? 'border-emerald-400/60 text-emerald-100 bg-emerald-500/10'
+                          : 'border-red-400/60 text-red-100 bg-red-500/10'
+                      }`}
+                    >
+                      {kycVerified ? 'YES' : 'NO'}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-200">KYB verified</span>
-                    <span className="inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border border-emerald-400/60 text-emerald-100 bg-emerald-500/10">
-                      YES
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border ${
+                        kybVerified
+                          ? 'border-emerald-400/60 text-emerald-100 bg-emerald-500/10'
+                          : 'border-red-400/60 text-red-100 bg-red-500/10'
+                      }`}
+                    >
+                      {kybVerified ? 'YES' : 'NO'}
                     </span>
                   </div>
 

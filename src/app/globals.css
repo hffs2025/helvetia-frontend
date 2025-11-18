@@ -1,4 +1,8 @@
 /* src/app/global.css */
+html, body {
+  font-family: Helvetica, Arial, sans-serif !important;
+  font-size: 19px; /* era 16px */
+}
 
 /* ──────────────────────────────────────────────────────────────
    Tailwind v4
@@ -153,3 +157,4 @@
 .safe-top-25 {
   margin-top: 25px !important;
 }
+
