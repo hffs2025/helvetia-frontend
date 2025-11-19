@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// usa LOGIN_API_URL se c'è, altrimenti NEXT_PUBLIC_LOGIN_API_URL
+// 1) Dev: usa LOGIN_API_URL
+// 2) Prod: usa LOGIN_API_URL_PROD (server-side)
+// 3) Fallback finale: usa NEXT_PUBLIC_LOGIN_API_URL (client-side, ma qui server può leggerla)
 const LOGIN_API_URL =
-  process.env.LOGIN_API_URL || process.env.NEXT_PUBLIC_LOGIN_API_URL;
+  process.env.LOGIN_API_URL ||
+  process.env.LOGIN_API_URL_PROD ||
+  process.env.NEXT_PUBLIC_LOGIN_API_URL;
 
 export async function POST(req: NextRequest) {
   if (!LOGIN_API_URL) {
-    console.error('LOGIN_API_URL / NEXT_PUBLIC_LOGIN_API_URL not defined in env');
+    console.error('LOGIN API URL not defined');
     return NextResponse.json(
       { authenticated: false, error: 'Login backend not configured' },
       { status: 500 }
