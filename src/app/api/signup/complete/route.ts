@@ -1,59 +1,62 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 
-// Risoluzione robusta della URL (dev + prod + Amplify)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 function resolveApiUrl() {
-  const fromPublic = process.env.NEXT_PUBLIC_SIGNUP_COMPLETE_API_URL;
-  const fromServer = process.env.SIGNUP_COMPLETE_API_URL;
-  const fromProd = (process.env as any).SIGNUP_COMPLETE_API_URL_PROD;
+  const env: any = process.env;
 
-  const url = (fromPublic || fromServer || fromProd || "").trim();
+  const fromPublic = env.NEXT_PUBLIC_SIGNUP_COMPLETE_API_URL;
+  const fromServer = env.SIGNUP_COMPLETE_API_URL;
+  const fromProd = env.SIGNUP_COMPLETE_API_URL_PROD;
 
-  if (!url) {
-    console.error("[signup-complete] Nessuna API_URL trovata. Env:", {
-      NEXT_PUBLIC_SIGNUP_COMPLETE_API_URL: fromPublic,
-      SIGNUP_COMPLETE_API_URL: fromServer,
-      SIGNUP_COMPLETE_API_URL_PROD: fromProd,
-    });
-  } else {
-    console.log("[signup-complete] Using API_URL:", url);
-  }
+  const url =
+    (fromPublic && String(fromPublic).trim()) ||
+    (fromServer && String(fromServer).trim()) ||
+    (fromProd && String(fromProd).trim()) ||
+    "";
+
+  console.log("[signup-complete] Env values", {
+    NEXT_PUBLIC_SIGNUP_COMPLETE_API_URL: fromPublic,
+    SIGNUP_COMPLETE_API_URL: fromServer,
+    SIGNUP_COMPLETE_API_URL_PROD: fromProd,
+    RESOLVED_API_URL: url,
+  });
 
   return url;
 }
 
-const API_URL = resolveApiUrl();
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 export async function POST(req: NextRequest) {
-  // Se manca la URL → errore server (500)
-  if (!API_URL) {
+  const apiUrl = resolveApiUrl();
+
+  // se manca la URL -> errore server (500)
+  if (!apiUrl) {
+    console.error("[signup-complete] missing_api_url");
     return NextResponse.json(
       { created: false, error: "missing_api_url" },
       { status: 500 }
     );
   }
 
-  let body = {};
+  let body: any = {};
   try {
     body = await req.json();
   } catch (err) {
+    console.error("[signup-complete] invalid_json", err);
     return NextResponse.json(
       { created: false, error: "invalid_json" },
       { status: 400 }
     );
   }
 
-  // LOG utile: verifichiamo che arrivino ipAddress/ipCountry
-  console.log("[signup-complete] BODY ricevuto dal frontend:", body);
+  console.log("[signup-complete] BODY from frontend", body);
 
   try {
-    const upstreamRes = await fetch(API_URL, {
+    const upstreamRes = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body), // MANDIAMO TUTTO IL BODY
+      body: JSON.stringify(body),
       cache: "no-store",
     });
 
@@ -61,16 +64,21 @@ export async function POST(req: NextRequest) {
     let data: any = {};
     try {
       data = text ? JSON.parse(text) : {};
-    } catch {
-      console.warn("[signup-complete] Upstream risposta NON JSON:", text);
+    } catch (e) {
+      console.warn("[signup-complete] upstream non-JSON response", text);
     }
 
-    // Se la Lambda risponde created:true → OK
-    if (upstreamRes.ok && data?.created === true) {
+    // Lambda ok
+    if (upstreamRes.ok && data && data.created === true) {
+      console.log("[signup-complete] Account created OK");
       return NextResponse.json({ created: true }, { status: 200 });
     }
 
-    // Se siamo qui → la Lambda ha risposto errore, oppure manca created:true
+    console.error("[signup-complete] upstream_error", {
+      status: upstreamRes.status,
+      data,
+    });
+
     return NextResponse.json(
       {
         created: false,
@@ -80,7 +88,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   } catch (err) {
-    console.error("[signup-complete] upstream_fetch_failed:", err);
+    console.error("[signup-complete] upstream_fetch_failed", err);
     return NextResponse.json(
       { created: false, error: "upstream_fetch_failed" },
       { status: 500 }
