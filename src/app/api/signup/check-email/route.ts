@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  // URL GIUSTA: prima env "server-side", poi eventuale NEXT_PUBLIC
-  const API_URL =
-    process.env["CHECK_EMAIL_API_URL"] ??
-    process.env["NEXT_PUBLIC_CHECK_EMAIL_API_URL"] ??
-    "";
+// 1) Dev: CHECK_EMAIL_API_URL
+// 2) Prod: CHECK_EMAIL_API_URL_PROD
+// 3) Fallback: NEXT_PUBLIC_CHECK_EMAIL_API_URL
+const API_URL =
+  process.env.CHECK_EMAIL_API_URL ||
+  process.env.CHECK_EMAIL_API_URL_PROD ||
+  process.env.NEXT_PUBLIC_CHECK_EMAIL_API_URL ||
+  "";
 
+export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase();
 
@@ -18,6 +21,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (!API_URL) {
+    console.error(
+      "CHECK_EMAIL API URL not defined (CHECK_EMAIL_API_URL / CHECK_EMAIL_API_URL_PROD / NEXT_PUBLIC_CHECK_EMAIL_API_URL)"
+    );
     return NextResponse.json(
       { available: false, error: "missing_api_url" },
       { status: 500 }
@@ -29,7 +35,10 @@ export async function POST(req: NextRequest) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ email }),
     cache: "no-store"
-  }).catch(() => null);
+  }).catch((err) => {
+    console.error("Error calling CHECK_EMAIL upstream:", err);
+    return null;
+  });
 
   if (!upstream) {
     return NextResponse.json(
@@ -57,6 +66,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // QUI: usiamo esattamente quello che dice la Lambda
+  // Usiamo esattamente quello che dice la Lambda
   return NextResponse.json({ available: data?.available === true });
 }

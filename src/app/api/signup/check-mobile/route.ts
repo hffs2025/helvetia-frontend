@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  // 1. Prendo l'URL dell'API mobile
-  const API_URL =
-    process.env["CHECK_MOBILE_API_URL"] ??
-    process.env["NEXT_PUBLIC_CHECK_MOBILE_API_URL"] ??
-    "";
+// 1) Dev: CHECK_MOBILE_API_URL
+// 2) Prod: CHECK_MOBILE_API_URL_PROD
+// 3) Fallback: NEXT_PUBLIC_CHECK_MOBILE_API_URL
+const API_URL =
+  process.env.CHECK_MOBILE_API_URL ||
+  process.env.CHECK_MOBILE_API_URL_PROD ||
+  process.env.NEXT_PUBLIC_CHECK_MOBILE_API_URL ||
+  "";
 
+export async function POST(req: NextRequest) {
   // 2. Leggo il body e ricavo mobileE164
   const body = await req.json().catch(() => ({}));
   const mobileE164 = String(body.mobileE164 || "").trim();
@@ -19,6 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!API_URL) {
+    console.error("CHECK_MOBILE API URL not defined (CHECK_MOBILE_API_URL / CHECK_MOBILE_API_URL_PROD / NEXT_PUBLIC_CHECK_MOBILE_API_URL)");
     return NextResponse.json(
       { available: false, error: "missing_api_url" },
       { status: 500 }
@@ -31,7 +35,10 @@ export async function POST(req: NextRequest) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ mobileE164 }),
     cache: "no-store"
-  }).catch(() => null);
+  }).catch((err) => {
+    console.error("Error calling CHECK_MOBILE upstream:", err);
+    return null;
+  });
 
   if (!upstream) {
     return NextResponse.json(
