@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Cerchiamo la URL in modo robusto sia in dev che in prod.
-// 1) NEXT_PUBLIC_CHECK_EMAIL_API_URL (di solito quella corretta, usata anche dal client)
-// 2) CHECK_EMAIL_API_URL (fallback lato server)
-// Se nessuna è presente → stringa vuota.
-const API_URL =
-  (
-    process.env.NEXT_PUBLIC_CHECK_EMAIL_API_URL ||
-    process.env.CHECK_EMAIL_API_URL ||
-    ""
-  ).trim();
+function resolveApiUrl() {
+  const fromPublic = process.env.NEXT_PUBLIC_CHECK_EMAIL_API_URL;
+  const fromServer = process.env.CHECK_EMAIL_API_URL;
+  const fromProd = (process.env as any).CHECK_EMAIL_API_URL_PROD;
+
+  const url = (fromPublic || fromServer || fromProd || "").trim();
+
+  if (!url) {
+    console.error("[check-email] No API_URL found. Env values:", {
+      NEXT_PUBLIC_CHECK_EMAIL_API_URL: fromPublic,
+      CHECK_EMAIL_API_URL: fromServer,
+      CHECK_EMAIL_API_URL_PROD: fromProd,
+    });
+  } else {
+    console.log("[check-email] Using API_URL:", url);
+  }
+
+  return url;
+}
+
+const API_URL = resolveApiUrl();
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,25 +30,22 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({} as any));
     const email = String(body?.email ?? "").trim().toLowerCase();
 
-    // Debug opzionale: vedi cosa arriva dal client
-    // console.log("[check-email] BODY:", body, "PARSED EMAIL:", email);
-
-    // se manca l'email → non disponibile
+    // se manca l'email → errore client (400)
     if (!email) {
       return NextResponse.json(
         { available: false, error: "missing_email" },
-        { status: 200 }
+        { status: 400 }
       );
     }
 
-    // se manca la URL di backend → log e fallback
+    // se manca la URL di backend → errore server (500)
     if (!API_URL) {
       console.error(
-        "[check-email] Nessuna API_URL trovata. Verifica NEXT_PUBLIC_CHECK_EMAIL_API_URL / CHECK_EMAIL_API_URL"
+        "[check-email] Nessuna API_URL trovata. Verifica le env: NEXT_PUBLIC_CHECK_EMAIL_API_URL / CHECK_EMAIL_API_URL / CHECK_EMAIL_API_URL_PROD"
       );
       return NextResponse.json(
         { available: false, error: "missing_api_url" },
-        { status: 200 }
+        { status: 500 }
       );
     }
 
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest) {
     if (!upstream) {
       return NextResponse.json(
         { available: false, error: "upstream_unreachable" },
-        { status: 200 }
+        { status: 502 }
       );
     }
 
@@ -67,15 +75,16 @@ export async function POST(req: NextRequest) {
       console.warn("[check-email] upstream non-JSON response:", text);
     }
 
+    // diamo priorità al campo "available" se la Lambda lo fornisce
     const available =
-      typeof data?.available === "boolean" ? data.available : false;
+      typeof data?.available === "boolean" ? data.available : true;
 
     return NextResponse.json({ available }, { status: 200 });
   } catch (err) {
     console.error("[check-email] route error:", err);
     return NextResponse.json(
       { available: false, error: "temporary_error" },
-      { status: 200 }
+      { status: 500 }
     );
   }
 }
