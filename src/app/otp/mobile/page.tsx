@@ -1,304 +1,55 @@
-'use client';
-export const dynamic = 'force-static';
+import { NextRequest, NextResponse } from "next/server";
 
-import React, {
-  Suspense,
-  useEffect,
-  useState,
-  useCallback,
-} from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+// 1) Dev: OTP_MOBILE_API_URL
+// 2) Prod: OTP_MOBILE_API_URL_PROD
+// 3) Fallback: NEXT_PUBLIC_OTP_MOBILE_API_URL
+const API_URL =
+  process.env.OTP_MOBILE_API_URL ||
+  process.env.OTP_MOBILE_API_URL_PROD ||
+  process.env.NEXT_PUBLIC_OTP_MOBILE_API_URL ||
+  "";
 
-// === Palette ===
-const BACKGROUND = '#071C2C';
-const ACCENT = '#4FD1C5';
-const DISABLED_BG = '#9CA3AF';
+export async function POST(req: NextRequest) {
+  if (!API_URL) {
+    console.error(
+      "OTP_MOBILE API URL not defined (OTP_MOBILE_API_URL / OTP_MOBILE_API_URL_PROD / NEXT_PUBLIC_OTP_MOBILE_API_URL)"
+    );
+    return NextResponse.json(
+      { sent: false, verified: false, error: "missing_api_url" },
+      { status: 500 }
+    );
+  }
 
-// === Timer ===
-const EXPIRE_SECONDS = 900; // 15 minuti
+  const body = await req.json().catch(() => ({}));
 
-const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-const validateCode = (v: string) => /^\d{6}$/.test(v.trim());
+  const upstream = await fetch(API_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  }).catch((err) => {
+    console.error("Error calling OTP_MOBILE upstream:", err);
+    return null;
+  });
 
-type SignupIndividualPayload = {
-  firstName: string;
-  lastName: string;
-  country: string;
-  mobileE164: string;
-  email?: string;
-  password: string;
-};
+  if (!upstream) {
+    return NextResponse.json(
+      { sent: false, verified: false, error: "upstream_fetch_failed" },
+      { status: 502 }
+    );
+  }
 
-export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <OtpMobileInner />
-    </Suspense>
-  );
-}
+  const text = await upstream.text();
+  let data: any = null;
 
-function OtpMobileInner() {
-  const router = useRouter();
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return NextResponse.json(
+      { sent: false, verified: false, error: "upstream_not_json", upstreamRaw: text },
+      { status: 502 }
+    );
+  }
 
-  // === Dati da sessionStorage ===
-  const [signupData, setSignupData] = useState<SignupIndividualPayload | null>(null);
-
-  // === State UI ===
-  const [mobile, setMobile] = useState('');
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-
-  const [nextTimer, setNextTimer] = useState(0);
-  const [ttl, setTtl] = useState(EXPIRE_SECONDS);
-  const isExpired = ttl <= 0;
-
-  // Carico i dati da sessionStorage (signupIndividual)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const raw = window.sessionStorage.getItem('signupIndividual');
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as SignupIndividualPayload;
-      setSignupData(parsed);
-      if (parsed.mobileE164) {
-        setMobile(parsed.mobileE164);
-      }
-    } catch {
-      // ignora
-    }
-  }, []);
-
-  // countdown OTP validity (15 min)
-  useEffect(() => {
-    if (!isExpired) {
-      const t = setInterval(() => setTtl((s) => (s > 0 ? s - 1 : 0)), 1000);
-      return () => clearInterval(t);
-    }
-  }, [isExpired]);
-
-  // countdown per resend
-  useEffect(() => {
-    if (nextTimer > 0) {
-      const t = setInterval(() => setNextTimer((s) => (s > 0 ? s - 1 : 0)), 1000);
-      return () => clearInterval(t);
-    }
-  }, [nextTimer]);
-
-  // === API ===
-
-  const sendOtp = useCallback(async () => {
-    setError(null);
-    if (!mobile) {
-      setError('Mobile number not found. Please restart the signup.');
-      return;
-    }
-    try {
-      setSending(true);
-      setInfo('Sending code…');
-      setTtl(EXPIRE_SECONDS);
-      setNextTimer(EXPIRE_SECONDS);
-
-      const res = await fetch('/api/otp/mobile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'send',
-          mobileE164: mobile,
-        }),
-        cache: 'no-store',
-      });
-      const data = await res.json();
-      if (!res.ok || data?.sent !== true) {
-        throw new Error(data?.error || 'Failed to send code');
-      }
-      setInfo('Code sent. Check your SMS.');
-    } catch (e: any) {
-      setInfo(null);
-      setError(e?.message || 'Unable to send the code right now.');
-    } finally {
-      setSending(false);
-    }
-  }, [mobile]);
-
-  const onVerify = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError(null);
-      setInfo(null);
-
-      if (!mobile) {
-        setError('Mobile number not found. Please restart the signup.');
-        return;
-      }
-      if (isExpired) {
-        setError('Code expired. Please request a new one.');
-        return;
-      }
-      if (!validateCode(code)) {
-        setError('Enter the 6-digit code you received via SMS.');
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const res = await fetch('/api/otp/mobile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'verify',
-            mobileE164: mobile,
-            code,
-          }),
-          cache: 'no-store',
-        });
-        const data = await res.json();
-        if (!res.ok || data?.verified !== true) {
-          throw new Error(data?.error || 'Invalid code');
-        }
-
-        // segno che il mobile è stato verificato
-        try {
-          if (typeof window !== 'undefined') {
-            window.sessionStorage.setItem('signupMobileVerified', '1');
-          }
-        } catch {
-          // non blocco il flusso
-        }
-
-        // passo allo step successivo: OTP email
-        router.push('/otp/email');
-      } catch (e: any) {
-        setError(e?.message || 'Verification failed. Try again.');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [code, isExpired, mobile, router]
-  );
-
-  const nextMm = Math.floor(nextTimer / 60);
-  const nextSs = nextTimer % 60;
-  const nextLabel =
-    nextTimer > 0
-      ? `Next code in ${pad2(nextMm)}:${pad2(nextSs)}`
-      : 'Send the code !';
-
-  return (
-    <div
-      className="min-h-screen flex flex-col items-center px-4"
-      style={{ backgroundColor: BACKGROUND }}
-    >
-      {/* Logo */}
-      <div className="flex flex-col items-center justify-center mt-5 mb-5">
-        <Image
-          src="/images/Logo.png"
-          alt="Helvetia Logo"
-          width={150}
-          height={150}
-          priority
-          className="object-contain"
-        />
-      </div>
-
-      {/* Card */}
-      <div className="w-full max-w-[600px] mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 text-slate-100 shadow-xl">
-        {/* Title */}
-        <div className="text-center mb-5">
-          <h1 className="text-2xl font-semibold">Verify your Mobile</h1>
-        </div>
-
-        <form id="otp-form" className="grid gap-4" onSubmit={onVerify}>
-          {/* MOBILE (read-only) */}
-          <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Mobile number</label>
-            <input
-              type="tel"
-              value={mobile}
-              readOnly
-              placeholder="+41..."
-              className="h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-slate-100 placeholder-slate-400 outline-none"
-            />
-          </div>
-
-          {/* OTP */}
-          <div className="grid gap-2">
-            <label className="text-sm text-slate-200">Verification code (6 digits)</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              pattern="[0-9]{6}"
-              value={code}
-              onChange={(e) =>
-                setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
-              }
-              placeholder="Enter the 6-digit code"
-              className="h-11 rounded-xl bg-white/10 border border-white/20 px-3 text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-white/30 tabular-nums tracking-widest"
-              required
-              aria-invalid={!!error}
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col items-center gap-3 mt-2">
-            <button
-              type="button"
-              onClick={sendOtp}
-              disabled={sending || nextTimer > 0}
-              className="h-11 w-[300px] rounded-xl font-medium transition-colors"
-              style={{
-                backgroundColor:
-                  sending || nextTimer > 0 ? DISABLED_BG : ACCENT,
-                color: BACKGROUND,
-              }}
-            >
-              {sending ? 'Sending…' : nextLabel}
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading || !validateCode(code) || isExpired}
-              className="h-11 w-[300px] rounded-xl font-medium transition-colors"
-              style={{
-                backgroundColor:
-                  loading || !validateCode(code) || isExpired
-                    ? DISABLED_BG
-                    : ACCENT,
-                color: BACKGROUND,
-              }}
-            >
-              {loading ? 'Verifying…' : 'Validate !'}
-            </button>
-          </div>
-
-          {/* Info / Error */}
-          {error && (
-            <div className="text-sm text-center p-3 rounded-lg bg-rose-500/10 text-rose-200 border border-rose-500/20 mt-3">
-              {error}
-            </div>
-          )}
-          {info && !error && (
-            <div className="text-sm text-center p-3 rounded-lg bg-emerald-400/10 text-emerald-200 border border-emerald-400/20 mt-3">
-              {info}
-            </div>
-          )}
-
-          {isExpired && (
-            <div className="text-xs text-center p-2 rounded-lg bg-amber-400/10 text-amber-200 border border-amber-400/20">
-              The code has expired. Please tap “Send the code !” again.
-            </div>
-          )}
-
-          <p className="text-xs text-slate-400 text-center mt-2">
-            Didn’t receive the code? Check your SMS and make sure the mobile number is correct.
-          </p>
-        </form>
-      </div>
-    </div>
-  );
+  return NextResponse.json(data, { status: upstream.status });
 }
