@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
@@ -26,14 +27,14 @@ const MENU: MenuItem[] = [
   { key: 'tools', label: 'Tools', href: '/dashboard/tools' },
 ]
 
-export default function DashboardHomePage() {
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // LOGIN GUARD
+  // LOGIN GUARD comune a tutta l'area /dashboard
   useEffect(() => {
     const u = getStoredUser()
     if (!u) {
@@ -68,7 +69,7 @@ export default function DashboardHomePage() {
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: BACKGROUND, color: 'white' }}
     >
-      {/* HEADER */}
+      {/* HEADER UNICO */}
       <header className="w-full border-b border-white/10 bg-white/5 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -100,18 +101,25 @@ export default function DashboardHomePage() {
         </div>
       </header>
 
-      {/* MAIN LAYOUT */}
+      {/* LAYOUT CON MENU + CONTENUTO */}
       <div className="flex flex-1 justify-center">
         <div className="flex flex-1 max-w-6xl px-4 py-6 gap-6">
-          {/* MENU VERTICALE */}
+          {/* MENU VERTICALE UNICO */}
           <aside
             className="w-56 shrink-0 flex flex-col pr-4 border-r"
             style={{ borderColor: BORDER_LIGHT }}
           >
             <nav className="space-y-1">
               {MENU.map((item) => {
-                // Attivo solo quando il path combacia esattamente
-                const isActive = pathname === item.href
+                // Home attiva solo su /dashboard
+                let isActive = false
+                if (item.href === '/dashboard') {
+                  isActive = pathname === '/dashboard'
+                } else {
+                  isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(item.href + '/')
+                }
 
                 return (
                   <button
@@ -140,72 +148,8 @@ export default function DashboardHomePage() {
             </nav>
           </aside>
 
-          {/* CONTENUTO HOME */}
-          <main className="flex-1 space-y-6">
-            <div className="flex flex-col gap-1">
-              <h1 className="text-xl font-semibold text-slate-50">Home</h1>
-              <p className="text-sm text-slate-300">
-                Manage all your HFSS services in one place.
-              </p>
-            </div>
-
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg space-y-4 backdrop-blur">
-              <h2 className="text-sm font-semibold">Overview</h2>
-              <p className="text-sm text-slate-300">
-                Welcome to your HFSS dashboard. Here is a quick summary of your
-                profile.
-              </p>
-
-              <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                    User ID
-                  </p>
-                  <p className="mt-1 text-xs font-mono text-slate-50">
-                    {user.idUser}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                    Email
-                  </p>
-                  <p className="mt-1 text-sm text-slate-50">{user.email}</p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                    Country
-                  </p>
-                  <p className="mt-1 text-sm text-slate-50">
-                    {user.country} ({user.country2})
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-slate-300">
-                    Mobile
-                  </p>
-                  <p className="mt-1 text-sm text-slate-50">
-                    {user.mobileE164}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 pt-3">
-                To use HFSS services, you must complete the required compliance
-                checks.
-                <br />
-                For a personal account, you need to pass <b>KYC</b>.
-                <br />
-                For a business account, you must pass both <b>KYC</b> and{' '}
-                <b>KYB</b>.
-                <br />
-                Until you have successfully completed your KYC verification,
-                some sections will remain locked.
-              </p>
-            </section>
-          </main>
+          {/* CONTENUTO DELLA PAGINA (Home, Crypto, ecc.) */}
+          <main className="flex-1 space-y-6">{children}</main>
         </div>
       </div>
     </div>
