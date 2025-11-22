@@ -1,0 +1,28 @@
+name: Generate Fireblocks CSR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-csr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate private key
+        run: |
+          openssl genrsa -out fireblocks_apiuser.key 2048
+
+      - name: Generate CSR
+        run: |
+          openssl req -new -key fireblocks_apiuser.key -subj "/C=IT/ST=Italy/L=Milan/O=HFSS/OU=Dev/CN=HFSS-Fireblocks-ApiUser" -out fireblocks_apiuser.csr
+
+      - name: Upload key as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fireblocks_apiuser_key
+          path: fireblocks_apiuser.key
+
+      - name: Upload CSR as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fireblocks_apiuser_csr
+          path: fireblocks_apiuser.csr
