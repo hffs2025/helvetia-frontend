@@ -16,13 +16,13 @@ jobs:
           openssl req -new -key fireblocks_apiuser.key -subj "/C=IT/ST=Italy/L=Milan/O=HFSS/OU=Dev/CN=HFSS-Fireblocks-ApiUser" -out fireblocks_apiuser.csr
 
       - name: Upload key as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fireblocks_apiuser_key
           path: fireblocks_apiuser.key
 
       - name: Upload CSR as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fireblocks_apiuser_csr
           path: fireblocks_apiuser.csr
